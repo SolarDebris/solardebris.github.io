@@ -25,7 +25,7 @@ const Navbar = () => {
   };
 
   return (
-    <AppBar position="static" class="nav-bar">
+    <AppBar position="static" class="bg-dr-current_line text-dr-cyan w-full">
       <Toolbar>
         <IconButton
           size="medium"
@@ -43,16 +43,24 @@ const Navbar = () => {
         <Stack direction="row" spacing={2}>
           <nav>
             <Button color="inherit">
-              <a href="/">Home</a>
+              <a class="text-dr-cyan" href="/">
+                Home
+              </a>
             </Button>
             <Button color="inherit">
-              <a href="/about">About</a>
+              <a class="text-dr-cyan" href="/about">
+                About
+              </a>
             </Button>
             <Button color="inherit">
-              <a href="/blog">Blog</a>
+              <a class="text-dr-cyan" href="/blog">
+                Blog
+              </a>
             </Button>
             <Button color="inherit">
-              <a href="/contact">Contact</a>
+              <a class="text-dr-cyan" href="/contact">
+                Contact
+              </a>
             </Button>
           </nav>
         </Stack>
