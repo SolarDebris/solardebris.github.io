@@ -48,11 +48,6 @@ const Navbar = () => {
               </a>
             </Button>
             <Button color="inherit">
-              <a class="text-dr-cyan" href="/about">
-                About
-              </a>
-            </Button>
-            <Button color="inherit">
               <a class="text-dr-cyan" href="/blog">
                 Blog
               </a>
