@@ -2,7 +2,7 @@
 title: DEFCON 31 Quals Challenges
 category: Writeup
 date: June 10th, 2023
-description: A retroactive writeup on a few pwn and re challenges.
+description: A retroactive writeup on a few pwn and re challenges from DEFCON 31 Quals.
 ---
 
 ## Open House

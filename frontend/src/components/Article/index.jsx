@@ -49,13 +49,16 @@ const Article = (props) => {
   console.log("+++++");
 
   return (
-    <div class="flex justify-center pt-10 pb-10">
-      <div class="pt-14 bg-dr-current_line/40 w-4/5 h-full rounded-lg">
-        <h2 class="text-dr-orange font-bold text-2xl">
+    <div class="flex justify-center p-10">
+      <div class="pt-14 p-10 bg-dr-current_line/40 w-1/2 h-full rounded-lg">
+        <h2 class="text-dr-orange font-bold text-2xl flex justify-center">
           {post[2].category} - {post[2].title}
         </h2>
 
-        <h6 class="text-dr-purple py-1">By SolarDebris</h6>
+        <h6 class="text-dr-purple py-1 flex justify-center">By SolarDebris</h6>
+        <h6 class="text-dr-foreground py-1 pb-7 flex justify-center">
+          {post[2].date}
+        </h6>
         <ReactMarkdown>{post[0]}</ReactMarkdown>
       </div>
     </div>
