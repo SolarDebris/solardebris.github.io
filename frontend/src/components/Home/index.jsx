@@ -31,9 +31,8 @@ const Home = () => {
             <li>
               PWN and RE <EmojiFlags />
             </li>
-            <li>Binary Ninja</li>
             <li>
-              Operating Systems Internals <Code />
+              Binary Ninja <Code />
             </li>
             <li>
               A little bit of *OS Vulnerability Research <Apple />

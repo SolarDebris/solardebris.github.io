@@ -24,40 +24,41 @@ const Navbar = () => {
 
   return (
     <AppBar position="static" class="bg-dr-current_line text-dr-cyan w-full">
-      <Toolbar>
-        <IconButton
-          size="medium"
-          edge="start"
-          color="inherit"
-          aria-label="logo"
-        >
-          <a href="https://github.com/SolarDebris">
-            <Avatar alt="SolarDebris" src={Logo} />
-          </a>
-        </IconButton>
-        <Typography variant="h7" component="div" sx={{ flexGrow: 1 }}>
-          Alex Schmith
-        </Typography>
-
-        <Stack direction="row" spacing={2}>
-          <nav>
-            <Button color="inherit">
-              <a class="text-dr-cyan spacemono" href="/">
-                Home
-              </a>
-            </Button>
-            <Button color="inherit">
-              <a class="text-dr-cyan spacemono" href="/blog">
-                Blog
-              </a>
-            </Button>
-            <Button color="inherit">
-              <a class="text-dr-cyan spacemono" href="/contact">
-                Contact
-              </a>
-            </Button>
-          </nav>
-        </Stack>
+      <Toolbar class="flex justify-between">
+        <div class="flex items-center px-6">
+          <IconButton
+            size="medium"
+            edge="start"
+            color="inherit"
+            aria-label="logo"
+          >
+            <a href="https://github.com/SolarDebris">
+              <Avatar alt="SolarDebris" src={Logo} />
+            </a>
+          </IconButton>
+          <h1 class="spacemono pr-48">Alex Schmith</h1>
+        </div>
+        <div class="flex items-center px-10">
+          <Stack direction="row" spacing={2}>
+            <nav>
+              <Button color="inherit">
+                <a class="text-dr-cyan spacemono" href="/">
+                  Home
+                </a>
+              </Button>
+              <Button color="inherit">
+                <a class="text-dr-cyan spacemono" href="/blog">
+                  Blog
+                </a>
+              </Button>
+              <Button color="inherit">
+                <a class="text-dr-cyan spacemono" href="/contact">
+                  Contact
+                </a>
+              </Button>
+            </nav>
+          </Stack>
+        </div>
       </Toolbar>
     </AppBar>
   );
