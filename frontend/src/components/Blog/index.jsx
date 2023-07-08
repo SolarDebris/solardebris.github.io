@@ -1,37 +1,32 @@
 import "./index.scss";
 import Navbar from "../Navbar";
 import ArticleBox from "../ArticleBox";
+import React, { useEffect, useState } from "react";
 import { Paper, Box, Stack, CssBaseline, Container } from "@mui/material";
 
 const Blog = () => {
-  const articles = [
-    {
-      category: "writeup",
-      title: "DEFCON 31 Quals Challenges",
-      date: "June 10th, 2023",
-      description:
-        "A retroactive writeup on some of the pwn and re challenges. Including Open-House and I Fuck Up",
-    },
-    {
-      category: "writeup",
-      title: "Google CTF 2023 Quals Challenges",
-      date: "June 30th, 2023",
-      description:
-        "A retroactive writeup on some of the pwn and re challenges. Including the write-what-where, kconcat, and a few others",
-    },
-    {
-      category: "writeup",
-      title: "UIUCTF 2023 Challenges",
-      date: "July 5th, 2023",
-      description:
-        "A retroactive writeup on some of the pwn and re challenges. Including mock-kernel, virophage",
-    },
-  ];
+  const [posts, setPosts] = useState([]);
+
+  useEffect(() => {
+    fetch("http://localhost:5000/posts", {
+      methods: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => response.json())
+      .then((response) => setPosts(response))
+      .catch((error) => console.log(error));
+  }, []);
+
+  const articles = Object.values(posts);
+
+  console.log("Posts: " + articles);
 
   return (
     <div class="flex justify-center pt-10 pb-10">
       <div class="pt-14 bg-dr-current_line/40 w-3/5 h-full rounded-lg">
-        <div class="text-5xl text-dr-red font-bold p-10 flex justify-center">
+        <div class="text-5xl text-dr-red font-bold p-10 pb-5 flex justify-center">
           <h1>Blog</h1>
         </div>
         <Box
@@ -47,13 +42,23 @@ const Blog = () => {
             },
           }}
         >
-          {articles.map((article, index) => (
-            <ArticleBox key={index} {...article} />
+          {articles.map((post, index) => (
+            <ArticleBox
+              category={post.metadata.category}
+              title={post.metadata.title}
+              date={post.metadata.date}
+              description={post.metadata.description}
+              id={index}
+            />
           ))}
         </Box>
       </div>
     </div>
   );
 };
+
+//       {articles.map((article, index) => (
+//          <ArticleBox key={index} {...article} />
+//       ))}
 
 export default Blog;

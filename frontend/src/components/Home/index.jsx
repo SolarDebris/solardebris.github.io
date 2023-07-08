@@ -23,8 +23,8 @@ const Home = () => {
           <h1>About Me</h1>
         </div>
         <div class="text-lg text-dr-foreground p-5 px-28 flex justify-center">
-          Hi my name is Alex. I'm a security researcher and ctf player in melby.
-          My work, projects, and interests include:
+          Hi my name is Alex. I'm a security researcher and ctf player living in
+          melby. My work, projects, and interests include:
         </div>
         <div class="text-lg text-dr-foreground p-5 px-36 pb-16 flex justify-center">
           <ul class="list-disc">
@@ -47,6 +47,7 @@ const Home = () => {
             <li>
               Trying to get good at cryto ?? (but failing) <VpnKey />
             </li>
+            <li>Messing around with linux</li>
           </ul>
         </div>
       </div>

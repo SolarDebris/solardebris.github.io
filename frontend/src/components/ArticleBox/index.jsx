@@ -11,7 +11,12 @@ const ArticleBox = (props) => {
       <h6 class="text-dr-purple py-1">By SolarDebris</h6>
       <h6 class="text-dr-foreground ">{props.date}</h6>
       <p class="text-dr-foreground py-7">{props.description}</p>
-      <Chip label="Read More" component="a" href="/blog" clickable />
+      <Chip
+        label="Read More"
+        component="a"
+        href={"/blog/" + props.id}
+        clickable
+      />
     </Paper>
   );
 };

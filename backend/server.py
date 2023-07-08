@@ -1,19 +1,17 @@
 from flask import Flask
-import glob
+from flask_cors import CORS
+import blog
 
 app = Flask(__name__)
+CORS(app)
 
+CORS(app, origins=['localhost:5173'], allow_headers=['Content-Type'], supports_credentials=True)
 
-@app.route("/blog_headers")
-def blog_headers():
-    articles = []
-    return articles
-
-@app.route("/blog_posts")
-def blog_posts():
-    articles = []
+@app.route("/posts", methods=["GET"])
+def posts():
+    articles = blog.get_posts()
     return articles
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)
