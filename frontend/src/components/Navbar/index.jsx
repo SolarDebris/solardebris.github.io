@@ -36,7 +36,7 @@ const Navbar = () => {
               <Avatar alt="SolarDebris" src={Logo} />
             </a>
           </IconButton>
-          <h1 class="spacemono pr-48">Alex Schmith</h1>
+          <p class="spacemono pr-48">Alex Schmith</p>
         </div>
         <div class="flex items-center px-10">
           <Stack direction="row" spacing={2}>

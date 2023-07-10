@@ -1,4 +1,5 @@
 import "/src/index.scss";
+import "./article.scss";
 import React, { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 
@@ -51,7 +52,7 @@ const Article = (props) => {
   return (
     <div class="flex justify-center p-10">
       <div class="pt-14 p-10 bg-dr-current_line/40 w-1/2 h-full rounded-lg">
-        <h2 class="text-dr-orange font-bold text-2xl flex justify-center">
+        <h2 class="text-dr-orange font-bold text-4xl flex justify-center text-center">
           {post[2].category} - {post[2].title}
         </h2>
 
