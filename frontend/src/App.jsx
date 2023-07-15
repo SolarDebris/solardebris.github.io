@@ -1,4 +1,3 @@
-import "./App.scss";
 import "./index.scss";
 import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
@@ -26,11 +25,8 @@ function App() {
   const articles = Object.values(posts);
   console.log(articles);
 
-  var keys = [];
-
   return (
     <>
-      <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/blog" element={<Blog />} />

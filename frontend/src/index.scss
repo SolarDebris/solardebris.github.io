@@ -42,3 +42,13 @@ code {
   top: 50%;
   margin-top: 40%;
 }
+
+@font-face {
+  font-family: "JetBrainsMono Nerd Font";
+  src: url("/src/assets/fonts/JetBrainsMonoNerdFont-Regular.ttf") format(ttf);
+}
+
+@font-face {
+  font-family: "SpaceMono Nerd Font";
+  src: url("/src/assets/fonts/SpaceMonoNerdFont-Regular.ttf");
+}

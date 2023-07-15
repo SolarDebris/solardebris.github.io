@@ -1,8 +1,7 @@
 import "./index.scss";
-import Navbar from "../Navbar";
 import ArticleBox from "../ArticleBox";
 import React, { useEffect, useState } from "react";
-import { Paper, Box, Stack, CssBaseline, Container } from "@mui/material";
+import Box from "@mui/material";
 
 const Blog = () => {
   const [posts, setPosts] = useState([]);
@@ -56,9 +55,5 @@ const Blog = () => {
     </div>
   );
 };
-
-//       {articles.map((article, index) => (
-//          <ArticleBox key={index} {...article} />
-//       ))}
 
 export default Blog;
