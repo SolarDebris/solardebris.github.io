@@ -18,7 +18,7 @@ import { Paper, Box, Stack, CssBaseline, Container } from "@mui/material";
 const Home = () => {
   return (
     <div class="flex justify-center pt-10 pb-10">
-      <div class="pt-14 bg-dr-current_line/40 w-3/5 h-full rounded-lg">
+      <div class="pt-14 bg-dr-current_line/40 w-3/5 h-full rounded-lg max-w-7xl">
         <div class="text-5xl text-dr-red font-bold p-10 flex justify-center">
           <h1>About Me</h1>
         </div>
