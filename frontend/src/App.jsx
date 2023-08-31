@@ -11,7 +11,7 @@ function App() {
   const [posts, setPosts] = useState([]);
 
   useEffect(() => {
-    fetch("http://localhost:5000/posts", {
+    fetch("http://www.solardebris.xyz:5000/posts", {
       methods: "GET",
       headers: {
         "Content-Type": "application/json",
