@@ -3,15 +3,20 @@ import "./article.scss";
 import React, { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 
-import { Paper, Chip, Stack } from "@mui/material";
+interface Post {
+  id: number;
+  title: string;
+  category: string;
+  date: string;
+}
 
-const Article = (props) => {
-  const [posts, setPosts] = useState([]);
-  const [article, setArticle] = useState([]);
+const Article: React.FC<Post> = (props) => {
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [article, setArticle] = useState<Post | null>(null);
 
   useEffect(() => {
     fetch("http://localhost:5000/posts", {
-      methods: "GET",
+      method: "GET",
       headers: {
         "Content-Type": "application/json",
       },
@@ -50,14 +55,16 @@ const Article = (props) => {
   console.log("+++++");
 
   return (
-    <div class="flex justify-center p-10">
-      <div class="pt-14 p-10 bg-dr-current_line/40 w-1/2 h-full rounded-lg">
-        <h2 class="text-dr-orange font-bold text-4xl flex justify-center text-center">
+    <div className="flex justify-center p-10">
+      <div className="pt-14 p-10 bg-dr-current_line/40 w-1/2 h-full rounded-lg">
+        <h2 className="text-dr-orange font-bold text-4xl flex justify-center text-center">
           {post[2].category} - {post[2].title}
         </h2>
 
-        <h6 class="text-dr-purple py-1 flex justify-center">By SolarDebris</h6>
-        <h6 class="text-dr-foreground py-1 pb-7 flex justify-center">
+        <h6 className="text-dr-purple py-1 flex justify-center">
+          By SolarDebris
+        </h6>
+        <h6 className="text-dr-foreground py-1 pb-7 flex justify-center">
           {post[2].date}
         </h6>
         <ReactMarkdown>{post[0]}</ReactMarkdown>

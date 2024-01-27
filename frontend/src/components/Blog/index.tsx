@@ -8,7 +8,7 @@ const Blog = () => {
 
   useEffect(() => {
     fetch("http://localhost:5000/posts", {
-      methods: "GET",
+      method: "GET",
       headers: {
         "Content-Type": "application/json",
       },
@@ -23,9 +23,9 @@ const Blog = () => {
   console.log("Posts: " + articles);
 
   return (
-    <div class="flex justify-center pt-10 pb-10">
-      <div class="pt-14 bg-dr-current_line/40 w-3/5 h-full rounded-lg max-w-7xl">
-        <div class="text-5xl text-dr-red font-bold p-10 pb-5 flex justify-center">
+    <div className="flex justify-center pt-10 pb-10">
+      <div className="pt-14 bg-dr-current_line/40 w-3/5 h-full rounded-lg max-w-7xl">
+        <div className="text-5xl text-dr-red font-bold p-10 pb-5 flex justify-center">
           <h1>Blog</h1>
         </div>
         <Box

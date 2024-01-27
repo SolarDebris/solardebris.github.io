@@ -1,18 +1,22 @@
 import "./index.scss";
 import { Routes, Route } from "react-router-dom";
-import Navbar from "./components/Navbar";
 import Home from "./components/Home";
 import Contact from "./components/Contact";
 import Blog from "./components/Blog";
 import Article from "./components/Article";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+
+interface Post {
+  id: number;
+}
 
 function App() {
-  const [posts, setPosts] = useState([]);
+  //const [posts, setPosts] = useState([]);
+  const [posts, setPosts] = useState<Post[]>([]);
 
   useEffect(() => {
     fetch("http://www.solardebris.xyz:5000/posts", {
-      methods: "GET",
+      method: "GET",
       headers: {
         "Content-Type": "application/json",
       },
@@ -31,7 +35,11 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/blog" element={<Blog />} />
         {articles.map((post) => (
-          <Route path={"/blog/" + post.id} element={<Article id={post.id} />} />
+          <Route
+            key={post.id}
+            path={`/blog/${post.id}`}
+            element={<Article id={post.id} />}
+          />
         ))}
         <Route path="/contact" element={<Contact />} />
       </Routes>

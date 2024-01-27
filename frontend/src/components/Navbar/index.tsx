@@ -23,9 +23,12 @@ const Navbar = () => {
   };
 
   return (
-    <AppBar position="static" class="bg-dr-current_line text-dr-cyan w-full">
-      <Toolbar class="flex justify-between">
-        <div class="flex items-center px-6">
+    <AppBar
+      position="static"
+      className="bg-dr-current_line text-dr-cyan w-full"
+    >
+      <Toolbar className="flex justify-between">
+        <div className="flex items-center px-6">
           <IconButton
             size="medium"
             edge="start"
@@ -36,23 +39,23 @@ const Navbar = () => {
               <Avatar alt="SolarDebris" src={Logo} />
             </a>
           </IconButton>
-          <p class="spacemono pr-48">Alex Schmith</p>
+          <p className="spacemono pr-48">Alex Schmith</p>
         </div>
-        <div class="flex items-center px-10">
+        <div className="flex items-center px-10">
           <Stack direction="row" spacing={2}>
             <nav>
               <Button color="inherit">
-                <a class="text-dr-cyan spacemono" href="/">
+                <a className="text-dr-cyan spacemono" href="/">
                   Home
                 </a>
               </Button>
               <Button color="inherit">
-                <a class="text-dr-cyan spacemono" href="/blog">
+                <a className="text-dr-cyan spacemono" href="/blog">
                   Blog
                 </a>
               </Button>
               <Button color="inherit">
-                <a class="text-dr-cyan spacemono" href="/contact">
+                <a className="text-dr-cyan spacemono" href="/contact">
                   Contact
                 </a>
               </Button>
