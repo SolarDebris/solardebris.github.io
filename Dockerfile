@@ -15,6 +15,7 @@ CMD python3 server.py
 
 WORKDIR /app/frontend/
 RUN npm install
-CMD npm run dev --host
+RUN npm run build
+#RUN npm run preview --host
 
-EXPOSE 5173
+EXPOSE 4173

@@ -23,11 +23,8 @@ const Navbar = () => {
   };
 
   return (
-    <AppBar
-      position="static"
-      className="bg-dr-current_line text-dr-cyan w-full"
-    >
-      <Toolbar className="flex justify-between">
+    <AppBar position="static" class="bg-dr-current_line text-dr-cyan w-full">
+      <Toolbar class="flex justify-between">
         <div className="flex items-center px-6">
           <IconButton
             size="medium"

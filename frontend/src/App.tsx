@@ -8,6 +8,9 @@ import { useEffect, useState } from "react";
 
 interface Post {
   id: number;
+  title: string;
+  category: string;
+  date: string;
 }
 
 function App() {
