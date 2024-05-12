@@ -15,10 +15,12 @@ const Blog = () => {
     })
       .then((response) => response.json())
       .then((response) => setPosts(response))
-      .catch((error) => console.log(error));
+      .catch((error) => console.log("Error fetching data: ",   error));
   }, []);
 
   const articles = Object.values(posts);
+
+
 
   console.log("Posts: " + articles);
 

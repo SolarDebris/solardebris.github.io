@@ -28,8 +28,7 @@ const Article: React.FC<Post> = (props) => {
 
   const articles = Object.values(posts);
 
-  useEffect(() => {
-    if (articles.length > 0) {
+  useEffect(() => { if (articles.length > 0) {
       const selectedArticle = articles.find((post) => post.id === props.id);
       console.log("Selected Article");
       console.log(selectedArticle);
