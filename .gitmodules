@@ -1,0 +1,3 @@
+[submodule "blog_generator"]
+	path = blog_generator
+	url = git@github.com:SolarDebris/blog_generator

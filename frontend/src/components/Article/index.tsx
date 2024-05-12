@@ -2,6 +2,7 @@ import "/src/index.scss";
 import "./article.scss";
 import React, { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
+import DOMPurify from "dompurify";
 
 interface Post {
   id: number;
@@ -30,9 +31,6 @@ const Article: React.FC<Post> = (props) => {
 
   useEffect(() => { if (articles.length > 0) {
       const selectedArticle = articles.find((post) => post.id === props.id);
-      console.log("Selected Article");
-      console.log(selectedArticle);
-      console.log("--------");
       setArticle(selectedArticle);
     }
   }, [articles, props.id]);
@@ -48,25 +46,31 @@ const Article: React.FC<Post> = (props) => {
     console.log("Post is empty");
     return <div>Loading...</div>;
   }
+  
+  const contents = DOMPurify.sanitize(post[0])
+  const category = DOMPurify.sanitize(post[2].category)
+  const title = DOMPurify.sanitize(post[2].title)
+  const date = DOMPurify.sanitize(post[2].date)
 
   console.log("Post");
   console.log(post);
+  console.log(contents)
   console.log("+++++");
 
   return (
     <div className="flex justify-center p-10">
       <div className="pt-14 p-10 bg-dr-current_line/40 w-1/2 h-full rounded-lg">
         <h2 className="text-dr-orange font-bold text-4xl flex justify-center text-center">
-          {post[2].category} - {post[2].title}
+          {category} - {title}
         </h2>
 
         <h6 className="text-dr-purple py-1 flex justify-center">
           By SolarDebris
         </h6>
         <h6 className="text-dr-foreground py-1 pb-7 flex justify-center">
-          {post[2].date}
+          {date}
         </h6>
-        <ReactMarkdown>{post[0]}</ReactMarkdown>
+        <div dangerouslySetInnerHTML={{ __html: contents }} />
       </div>
     </div>
   );

@@ -24,10 +24,11 @@ function App() {
       },
     })
       .then((response) => response.json())
-      .then((response) => setPosts(response))
+      .then((response) => setPosts(response)) 
       .catch((error) => console.log(error));
   }, []);
 
+  console.log(posts);
   const articles = Object.values(posts);
   console.log(articles);
 
