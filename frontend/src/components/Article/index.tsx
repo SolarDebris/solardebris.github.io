@@ -59,7 +59,7 @@ const Article: React.FC<Post> = (props) => {
 
   return (
     <div className="flex justify-center p-10">
-      <div className="pt-14 p-10 bg-dr-current_line/40 w-1/2 h-full rounded-lg">
+      <div className="pt-14 p-10 bg-dr-current_line/40 w-1/2 max-w-4xl h-full rounded-lg">
         <h2 className="text-dr-orange font-bold text-4xl flex justify-center text-center">
           {category} - {title}
         </h2>

@@ -12,7 +12,7 @@ import {
 const Home = () => {
   return (
     <div className="flex justify-center pt-10 pb-10">
-      <div className="pt-14 bg-dr-current_line/40 w-3/5 h-full rounded-lg max-w-7xl">
+      <div className="pt-14 bg-dr-current_line/40 w-3/5 max-w-4xl h-full rounded-lg max-w-7xl">
         <div className="text-5xl text-dr-red font-bold p-10 flex justify-center">
           <h1>About Me</h1>
         </div>

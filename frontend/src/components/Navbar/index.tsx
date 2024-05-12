@@ -23,43 +23,43 @@ const Navbar = () => {
   };
 
   return (
-    <AppBar position="static" class="bg-dr-current_line text-dr-cyan w-full">
-      <Toolbar class="flex justify-between">
-        <div className="flex items-center px-6">
-          <IconButton
-            size="medium"
-            edge="start"
-            color="inherit"
-            aria-label="logo"
-          >
-            <a href="https://github.com/SolarDebris">
-              <Avatar alt="SolarDebris" src={Logo} />
-            </a>
-          </IconButton>
-          <p className="spacemono pr-48">Alex Schmith</p>
-        </div>
-        <div className="flex items-center px-10">
-          <Stack direction="row" spacing={2}>
-            <nav>
-              <Button color="inherit">
-                <a className="text-dr-cyan spacemono" href="/">
-                  Home
-                </a>
-              </Button>
-              <Button color="inherit">
-                <a className="text-dr-cyan spacemono" href="/blog">
-                  Blog
-                </a>
-              </Button>
-              <Button color="inherit">
-                <a className="text-dr-cyan spacemono" href="/contact">
-                  Contact
-                </a>
-              </Button>
-            </nav>
-          </Stack>
-        </div>
-      </Toolbar>
+    <AppBar position="static" class="bg-dr-current_line text-dr-cyan w-full flex justify-center">
+        <Toolbar class="flex max-w-4xl justify-center">
+            <div className="flex items-center px-6">
+                <IconButton
+                    size="medium"
+                    edge="start"
+                    color="inherit"
+                    aria-label="logo"
+                >
+                    <a href="https://github.com/SolarDebris">
+                        <Avatar alt="SolarDebris" src={Logo} />
+                    </a>
+                </IconButton>
+                <p className="spacemono pr-48">Alex Schmith</p>
+            </div>
+            <div className="flex items-center px-10">
+                <Stack direction="row" spacing={2}>
+                    <nav>
+                        <Button color="inherit">
+                            <a className="text-dr-cyan spacemono" href="/">
+                            Home
+                            </a>
+                        </Button>
+                        <Button color="inherit">
+                            <a className="text-dr-cyan spacemono" href="/blog">
+                            Blog
+                            </a>
+                        </Button>
+                        <Button color="inherit">
+                            <a className="text-dr-cyan spacemono" href="/contact">
+                            Contact
+                            </a>
+                        </Button>
+                    </nav>
+                </Stack>
+            </div>
+        </Toolbar>
     </AppBar>
   );
 };
