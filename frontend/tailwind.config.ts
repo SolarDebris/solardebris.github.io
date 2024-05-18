@@ -24,7 +24,9 @@ const config: Config = {
     fontFamily: {
         'sans': ["Space Grotesk", "JetBrainsMono Nerd Font", "sans-serif"],
         'serif': ["Space Grotesk", "JetBrainsMono Nerd Font", "sans-serif"],
-        'mono': ["Space Grotesk", "JetBrainsMono Nerd Font", "sans-serif"]
+        'mono': ["Space Grotesk", "JetBrainsMono Nerd Font", "sans-serif"],
+        'grotesk': "Space Grotesk",
+        'jetbrains': "JetBrainsMono Nerd Font"
     },
     extend: {},
   },

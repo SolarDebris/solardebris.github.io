@@ -41,10 +41,14 @@ def get_posts():
             if len(line.split(":")) > 1:
                 metadict[line.split(":")[0]] = line.split(":")[1]
 
+        metadict["category"] = metadict["category"].split(",")
+
+        print(metadict)
         postdict["id"] = str(id)
         postdict["metadata"] = metadict
         postdict["content"] = html_file
         posts[id] = postdict
+        print(postdict)
      
         id += 1
 

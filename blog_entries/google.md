@@ -1,6 +1,6 @@
 ---
 title: Google CTF 2023 Challenges
-category: Writeup
+category: WRITEUP, CTF
 date: June 30th, 2023
 description: A retroactive writeup on a few pwn, re, and maybe crypto challenges.
 ---

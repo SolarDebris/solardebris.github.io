@@ -1,12 +1,12 @@
-
-import { GetServerSideProps } from "next";
+import GetServerSideProps from "next";
+import localFont from 'next/font/local';
 import React, { useEffect, useState } from "react";
 import DOMPurify from "dompurify";
-import "/app/globals.scss";
+//import "/app/globals.scss";
 import "./article.scss";
 import Layer from "/components/layout.tsx";
 import ArticleBox from "/components/article_box.tsx";
-import Box from "@mui/material";
+import { Box }from "@mui/material";
 
 interface Post {
   id: string;
@@ -21,12 +21,41 @@ interface Metadata {
   title: string;
 }
 
-interface ArticleProps {
+interface PostsProps {
   initialPosts: Post[];
-  postId: string;
 }
 
-const Article: React.FC<ArticleProps> = ({ initialPosts }) => {
+const spaceGrotesk = localFont({
+    src: '../../public/fonts/SpaceGrotesk-Regular.ttf',
+    display: 'swap',
+})
+
+/*
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const res = await fetch("http://localhost:5000/posts");
+  const posts: Post[] = await res.json();
+
+  return {
+    props: {
+      initialPosts: posts
+    },
+  };
+};
+*/
+export const getStaticProps: GetStaticProps = async (context) => {
+  const res = await fetch("http://localhost:5000/posts");
+  const posts: Post[] = await res.json();
+
+  return {
+    props: {
+      initialPosts: posts
+    },
+  };
+};
+
+
+
+const Posts: React.FC<PostsProps> = ({ initialPosts }) => {
   const [posts, setPosts] = useState<Post[]>(initialPosts);
 useEffect(() => { if (initialPosts.length === 0) {
       fetch("http://localhost:5000/posts", {
@@ -42,14 +71,17 @@ useEffect(() => { if (initialPosts.length === 0) {
   }, [initialPosts]);
 
   const articles = Object.values(posts);
+  console.log(articles);
+
+  console.log("Tags");
+  console.log(articles[0].metadata.category);
 
   return (
     <Layer>
-
         <div className="flex justify-center pt-10 pb-10">
-          <div className="pt-14 bg-dr-current_line/40 w-3/5 h-full rounded-lg max-w-7xl">
+          <div className="pt-14 bg-dr-current_line/40 w-3/5 h-full rounded-lg max-w-4xl">
             <div className="text-5xl text-dr-red font-bold p-10 pb-5 flex justify-center">
-              <h1>Blog</h1>
+              <h1 className={spaceGrotesk.className}>Posts</h1>
             </div>
             <Box
               sx={{
@@ -64,15 +96,13 @@ useEffect(() => { if (initialPosts.length === 0) {
                 },
               }}
             >
-              {articles.map((post, index) => (
-                <ArticleBox
-                  category={post.metadata.category}
-                  title={post.metadata.title}
-                  date={post.metadata.date}
-                  description={post.metadata.description}
-                  id={Number(index)}
-                />
-              ))}
+                {articles.map((post, index) => (
+                    <ArticleBox
+                      metadata={post.metadata}
+                      content={post.content}
+                      id={index}
+                    />
+                ))}
             </Box>
           </div>
         </div>
@@ -81,15 +111,5 @@ useEffect(() => { if (initialPosts.length === 0) {
   );
 };
 
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  const res = await fetch("http://localhost:5000/posts");
-  const posts: Post[] = await res.json();
 
-  return {
-    props: {
-      initialPosts: posts
-    },
-  };
-};
-
-export default Article;
+export default Posts;

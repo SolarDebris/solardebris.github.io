@@ -1,6 +1,6 @@
 ---
 title: DEFCON 31 Quals Challenges
-category: Writeup
+category: WRITEUP, CTF, HEAP
 date: June 10th, 2023
 description: A retroactive writeup on a few pwn and re challenges from DEFCON 31 Quals.
 ---
@@ -34,7 +34,7 @@ _italic_
 
 #### Heap Leak
 
-![alt_text](/src/assets/images/logo.jpg)
+![alt_text]("/public/images/logo.jpg")
 
 #### PIE Leak
 

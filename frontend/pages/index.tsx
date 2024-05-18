@@ -6,8 +6,25 @@ import {
   VpnKey,
   Surfing,
   CellTower,
+  AdbIcon, 
+  AirplayIcon,
+  AndriodIcon,
+  BluetoothOutlinedIcon,
+  CatchingPokemonOutlinedIcon,
+  CoffeeOutlinedIcon,
+  LteMobiledataOutlinedIcon,
+  GamesOutlinedIcon,
+  HeadphonesOutlinedIcon,
+
 } from "@mui/icons-material";
 import Layout from "/components/layout.tsx";
+import localFont from "next/font/local";
+
+
+const spaceGrotesk = localFont({
+    src: '../public/fonts/SpaceGrotesk-Regular.ttf',
+    display: 'swap',
+})
 
 const Home = () => {
   return (
@@ -16,7 +33,7 @@ const Home = () => {
     <div className="flex justify-center pt-10 pb-10">
       <div className="pt-14 bg-dr-current_line/40 w-3/5 max-w-4xl h-full rounded-lg">
         <div className="text-5xl text-dr-red font-bold p-10 flex justify-center">
-          <h1>About Me</h1>
+          <h1 className={spaceGrotesk.className}>About Me</h1>
         </div>
         <div className="text-lg text-dr-foreground p-5 px-28 flex justify-center">
           Hi my name is Alex. I'm a security researcher and ctf player. My work,

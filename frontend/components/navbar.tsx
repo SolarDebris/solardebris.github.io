@@ -62,7 +62,7 @@ const Navbar = () => {
                         <Button color="inherit">
                             <Link className="text-dr-cyan" href="/">
                             <p className={spaceGrotesk.className}>
-                            Home
+                            Home $
                             </p>
                             </Link>
                         </Button>
