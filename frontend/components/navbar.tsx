@@ -2,7 +2,8 @@
 
 import * as React from "react";
 //import { Link, NavLink } from "react-router-dom";
-import Link from 'next/link'
+import Link from 'next/link';
+import Image from 'next/image';
 import localFont from 'next/font/local';
 import {
   Avatar,
@@ -14,12 +15,15 @@ import {
   Button,
 } from "@mui/material";
 import "/app/globals.scss";
+import Logo from "../public/images/logo.png"
 
 
 const spaceGrotesk = localFont({
     src: '../public/fonts/SpaceGrotesk-Regular.ttf',
     display: 'swap',
 })
+
+
 
 
 const Navbar = () => {
@@ -45,10 +49,12 @@ const Navbar = () => {
                     aria-label="logo"
                 >
                     <a href="https://github.com/SolarDebris">
-                        <Avatar alt="SolarDebris" src="/public/logo.jpg" />
+                        <Image src={Logo} alt="SD"  width="36" height="36" className="rounded-full"/>
                     </a>
                 </IconButton>
-                <p className={spaceGrotesk.className}>Alex Schmith</p>
+                <div className="px-6">
+                    <p className={spaceGrotesk.className}>Alex Schmith</p>
+                </div>
             </div>
             <div className="flex items-center px-10">
                 <Stack direction="row" spacing={2}>

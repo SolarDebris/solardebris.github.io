@@ -1,0 +1,80 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+h2 {
+  @apply text-3xl;
+  @apply text-dr-purple;
+  @apply flex;
+  @apply justify-center;
+  @apply py-5;
+}
+
+h3 {
+  @apply text-2xl;
+  @apply text-dr-pink;
+  @apply flex;
+  @apply justify-center;
+  @apply py-5;
+}
+
+h4 {
+  @apply text-xl;
+  @apply text-dr-red;
+  @apply flex;
+  @apply justify-center;
+  @apply py-5;
+}
+
+h5 {
+  @apply text-lg;
+  @apply text-dr-cyan;
+  @apply flex;
+  @apply justify-center;
+  @apply py-5;
+}
+
+h6 {
+  @apply text-lg;
+  @apply text-dr-yellow;
+  @apply flex;
+  @apply justify-center;
+  @apply py-5;
+}
+
+pre {
+  @apply p-3;
+  @apply my-5;
+  @apply mx-10;
+  @apply rounded-lg;
+  @apply bg-dr-comment/30;
+  @apply text-dr-cyan;
+}
+
+code {
+  @apply bg-dr-comment/10;
+  @apply p-1;
+}
+
+ul {
+  @apply list-disc;
+  @apply px-5;
+}
+
+ol {
+  @apply list-decimal;
+  @apply px-7;
+}
+
+img {
+  @apply mx-auto;
+  @apply max-h-96;
+}
+
+blockquote {
+  @apply border-l-4;
+  @apply border-dr-comment/100;
+  @apply bg-dr-comment/30;
+  @apply p-3;
+  @apply m-5;
+}

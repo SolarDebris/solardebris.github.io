@@ -1,4 +1,4 @@
-import "/src/index.scss";
+import "/app/globals.scss";
 import * as React from "react";
 import { Paper, Chip, Stack, CssBaseline, Container } from "@mui/material";
 
