@@ -22,7 +22,7 @@ const Tag: React.FC<Tag> = (props) => {
 
   return (
 
-    <div className="px-2 ">
+    <div className="px-2 opacity-85">
 
         <Chip 
             className={spaceGrotesk.className}
@@ -30,8 +30,6 @@ const Tag: React.FC<Tag> = (props) => {
                 bgcolor: "#6272a4",
                 color: "#8be9fd",
                 bgopacity: 0.5,
-                                 
-
                 boxShadow: 3,
                 "& > :not(style)": {
 

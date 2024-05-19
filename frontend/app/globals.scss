@@ -20,12 +20,12 @@ code {
 
 .spacemono {
   font-family: "SpaceMono Nerd Font";
-  src: url("/public/fonts/SpaceMonoNerdFont-Regular.ttf");
+  src: url("../public/fonts/SpaceMonoNerdFont-Regular.ttf");
 }
 
 .grotesk {
   font-family: "Space Grotesk";
-  src: url("/public/fonts/SpaceGrotesk-Regular.ttf");
+  src: url("../public/fonts/SpaceGrotesk-Regular.ttf");
 }
 
 .mid-container {
@@ -50,15 +50,15 @@ code {
 
 @font-face {
   font-family: "JetBrainsMono Nerd Font";
-  src: url("/public/fonts/JetBrainsMonoNerdFont-Regular.ttf");
+  src: url("../public/fonts/JetBrainsMonoNerdFont-Regular.ttf") format("truetype");
 }
 
 @font-face {
   font-family: "SpaceMono Nerd Font";
-  src: url("/public/fonts/SpaceMonoNerdFont-Regular.ttf");
+  src: url("../public/fonts/SpaceMonoNerdFont-Regular.ttf") format("truetype");
 }
 
 @font-face {
   font-family: "Space Grotesk";
-  src: url("/public/fonts/SpaceGrotesk-Regular.ttf");
+  src: url("../public/fonts/SpaceGrotesk-Regular.ttf") format("truetype");
 }

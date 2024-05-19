@@ -53,7 +53,7 @@ const Navbar = () => {
                     </a>
                 </IconButton>
                 <div className="px-6">
-                    <p className={spaceGrotesk.className}>Alex Schmith</p>
+                    <p className={spaceGrotesk.className}>SolarDebris</p>
                 </div>
             </div>
             <div className="flex items-center px-10">

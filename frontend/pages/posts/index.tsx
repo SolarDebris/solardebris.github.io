@@ -80,7 +80,7 @@ useEffect(() => { if (initialPosts.length === 0) {
     <Layer>
         <div className="flex justify-center pt-10 pb-10">
           <div className="pt-14 bg-dr-current_line/40 w-3/5 h-full rounded-lg max-w-4xl">
-            <div className="text-5xl text-dr-red font-bold p-10 pb-5 flex justify-center">
+            <div className="text-5xl text-dr-red font-grotesk font-bold p-10 pb-5 flex justify-center">
               <h1 className={spaceGrotesk.className}>Posts</h1>
             </div>
             <Box

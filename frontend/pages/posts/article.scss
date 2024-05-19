@@ -54,21 +54,26 @@ pre {
 code {
   @apply bg-dr-comment/10;
   @apply p-1;
+  @apply text-dr-cyan;
+  @apply text-base;
 }
 
 ul {
   @apply list-disc;
   @apply px-5;
+  @apply text-base;
 }
 
 ol {
   @apply list-decimal;
   @apply px-7;
+  @apply text-base;
 }
 
 img {
   @apply mx-auto;
   @apply max-h-96;
+  @apply text-base;
 }
 
 blockquote {
@@ -77,4 +82,5 @@ blockquote {
   @apply bg-dr-comment/30;
   @apply p-3;
   @apply m-5;
+  @apply text-base;
 }

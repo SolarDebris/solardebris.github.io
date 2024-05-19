@@ -28,11 +28,12 @@ const ArticleBox: React.FC<Post> = (props) => {
 
   return (
     <Paper elevation={12}>
-      <h2 className="text-dr-orange font-bold pt-5 pb-2 text-2xl underline mb-4 underline-offset-8 decoration-2">
-        {props.metadata.title}
+      <h2  className="text-dr-orange font-bold pt-5 pb-2 text-2xl underline mb-4 underline-offset-8 decoration-2">
+        <a href={"/posts/" + props.id}>
+            {props.metadata.title}
+        </a>
       </h2>
       <div className="flex px-28 justify-center">
-
         <SellOutlinedIcon/>
         {props.metadata.category.map((category) => (
             <Tag name={category}/>
