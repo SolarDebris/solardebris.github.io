@@ -1,5 +1,5 @@
 import "/app/globals.scss";
-import Navbar from "/components/navbar"
+import Navbar from "../components/navbar"
 
 
 export default function RootLayout({

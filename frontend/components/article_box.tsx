@@ -2,17 +2,17 @@ import "/app/globals.scss";
 import * as React from "react";
 import { Paper, Chip, Stack, CssBaseline, Container } from "@mui/material";
 import DOMPurify from "dompurify";
-import Tag from "/components/tag.tsx";
+import Tag from "../components/tag.tsx";
 import SellOutlinedIcon from '@mui/icons-material/SellOutlined';
 
 interface Post {
-  id: string;
+  id: number;
   metadata: Metadata;
   content: string;
 }
 
 interface Metadata {
-  category: string;
+  category: string | string[];
   date: string;
   description: string;
   title: string;
@@ -24,7 +24,10 @@ const ArticleBox: React.FC<Post> = (props) => {
   //const sanitized_title = DOMPurify.sanitize(props.metadata.title);
   //const sanitized_date = DOMPurify.sanitize(props.metadata.date);
   //const sanitized_description = DOMPurify.sanitize(props.metadata.description);
-  console.log(props);
+  let category = props.metadata.category
+
+
+  const categories = Array.isArray(category) ? category : [category];
 
   return (
     <Paper elevation={12}>
@@ -35,8 +38,8 @@ const ArticleBox: React.FC<Post> = (props) => {
       </h2>
       <div className="flex px-28 justify-center">
         <SellOutlinedIcon/>
-        {props.metadata.category.map((category) => (
-            <Tag name={category}/>
+        {categories.map((category,key) => (
+            <Tag key={key} name={category}/>
         ))}
       </div>
       <h6 className="text-dr-purple py-1">By SolarDebris</h6>

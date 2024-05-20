@@ -1,22 +1,22 @@
-import { GetServerSideProps } from "next";
+import { GetServerSideProps, GetStaticProps } from "next";
 import React, { useEffect, useState } from "react";
 import DOMPurify from "dompurify";
 import "/app/globals.scss";
 import "./article.scss";
-import Layer from "/components/layout.tsx";
-import Tag from "/components/tag.tsx";
+import Layer from "../../components/layout.tsx";
+import Tag from "../../components/tag.tsx";
 import SellOutlinedIcon from "@mui/icons-material/SellOutlined";
 
 
 
 interface Post {
-  id: string;
+  id: number;
   metadata: Metadata;
   content: string;
 }
 
 interface Metadata {
-  category: string;
+  category: string | string[];
   date: string;
   description: string;
   title: string;
@@ -24,10 +24,10 @@ interface Metadata {
 
 interface ArticleProps {
   initialPosts: Post[];
-  postId: string;
+  postId: number;
 }
 
-const Article: React.FC<ArticleProps> = ({ initialPosts, postId }) => {
+const Article: React.FC<ArticleProps> = ({initialPosts, postId}) => {
   const [posts, setPosts] = useState<Post[]>(initialPosts);
   const [article, setArticle] = useState<Post | null>(null);
 useEffect(() => { if (initialPosts.length === 0) {
@@ -41,7 +41,7 @@ useEffect(() => { if (initialPosts.length === 0) {
         .then((response) => setPosts(response))
         .catch((error) => console.log(error));
     }
-  }, [initialPosts]);
+  }, [initialPosts, postId]);
 
   useEffect(() => {
     if (Object.keys(posts).length > 0) {
@@ -60,10 +60,13 @@ useEffect(() => { if (initialPosts.length === 0) {
     );
   }
 
+  let category = article.metadata.category;
   const sanitizedContent = DOMPurify.sanitize(article.content);
-  const sanitizedCategory = DOMPurify.sanitize(article.metadata.category);
   const sanitizedTitle = DOMPurify.sanitize(article.metadata.title);
   const sanitizedDate = DOMPurify.sanitize(article.metadata.date);
+
+  let categories = Array.isArray(category) ? category : [category];
+  
 
   return (
     <Layer>
@@ -74,8 +77,8 @@ useEffect(() => { if (initialPosts.length === 0) {
           </h2>
           <div className="flex justify-center px-28 pb-10">
             <SellOutlinedIcon/>
-            {article.metadata.category.map((category) => (
-                <Tag name={category}/>
+            {categories.map((category, key) => (
+                <Tag key={key} name={category}/>
             ))}
           </div>
 
@@ -100,7 +103,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   return {
     props: {
       initialPosts: posts,
-      postId: id,
+      postId: Number(id),
     },
   };
 };

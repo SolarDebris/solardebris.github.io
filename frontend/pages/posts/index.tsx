@@ -1,21 +1,21 @@
+import GetStaticProps from "next";
 import GetServerSideProps from "next";
 import localFont from 'next/font/local';
 import React, { useEffect, useState } from "react";
 import DOMPurify from "dompurify";
-//import "/app/globals.scss";
 import "./article.scss";
-import Layer from "/components/layout.tsx";
-import ArticleBox from "/components/article_box.tsx";
+import Layer from "../../components/layout.tsx";
+import ArticleBox from "../../components/article_box.tsx";
 import { Box }from "@mui/material";
 
 interface Post {
-  id: string;
+  id: number;
   metadata: Metadata;
   content: string;
 }
 
 interface Metadata {
-  category: string;
+  category: string | string[];
   date: string;
   description: string;
   title: string;
@@ -30,19 +30,7 @@ const spaceGrotesk = localFont({
     display: 'swap',
 })
 
-/*
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  const res = await fetch("http://localhost:5000/posts");
-  const posts: Post[] = await res.json();
-
-  return {
-    props: {
-      initialPosts: posts
-    },
-  };
-};
-*/
-export const getStaticProps: GetStaticProps = async (context) => {
+export async function  getStaticProps() {
   const res = await fetch("http://localhost:5000/posts");
   const posts: Post[] = await res.json();
 
@@ -98,6 +86,7 @@ useEffect(() => { if (initialPosts.length === 0) {
             >
                 {articles.map((post, index) => (
                     <ArticleBox
+                      key={index}
                       metadata={post.metadata}
                       content={post.content}
                       id={index}

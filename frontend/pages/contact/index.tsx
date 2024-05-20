@@ -1,7 +1,7 @@
 import "/app/globals.scss";
-import Layout from "/components/layout.tsx";
+import Layout from "../../components/layout.tsx";
 import { Paper, Box, Stack, CssBaseline, Container } from "@mui/material";
-import { Twitter, Markunread, GitHub, LinkedIn, ChatOutlinedIcon} from "@mui/icons-material";
+import { Twitter, Markunread, GitHub, LinkedIn } from "@mui/icons-material";
 import localFont from "next/font/local";
 
 

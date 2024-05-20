@@ -6,18 +6,18 @@ import {
   VpnKey,
   Surfing,
   CellTower,
-  AdbIcon, 
-  AirplayIcon,
-  AndriodIcon,
-  BluetoothOutlinedIcon,
-  CatchingPokemonOutlinedIcon,
-  CoffeeOutlinedIcon,
-  LteMobiledataOutlinedIcon,
-  GamesOutlinedIcon,
-  HeadphonesOutlinedIcon,
+  //AdbIcon, 
+  //AirplayIcon,
+  //AndriodIcon,
+  //BluetoothOutlinedIcon,
+  //CatchingPokemonOutlinedIcon,
+  //CoffeeOutlinedIcon,
+  //LteMobiledataOutlinedIcon,
+  //GamesOutlinedIcon,
+  //HeadphonesOutlinedIcon,
 
 } from "@mui/icons-material";
-import Layout from "/components/layout.tsx";
+import Layout from "../components/layout.tsx";
 import localFont from "next/font/local";
 
 
@@ -36,7 +36,7 @@ const Home = () => {
           <h1 className={spaceGrotesk.className}>About Me</h1>
         </div>
         <div className="text-lg text-dr-foreground p-5 px-28 flex justify-center">
-          Hi my name is Alex. I'm a security researcher and ctf player. My work,
+          Hi my name is Alex. I`&apos;`m a security researcher and ctf player. My work,
           projects, and interests include:
         </div>
         <div className="text-lg text-dr-foreground p-5 px-36 pb-16 flex justify-center">
