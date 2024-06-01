@@ -112,23 +112,27 @@ write; we can read whats at `/proc/{pid}/cmdline` which prints what was used to 
 #### Syscalls
 Looking at the easier exploit the calls that we would want to make would be something like this.
 
+```
 1. open("/proc/{pid}/")
 2. read(3, &stack\_addr, size)
 3. write(stdout, &stack\_addr, size)
+```
 
-In the read call we can determine the fd based on how many files the program has opened. By defualt
-every program opens the file descriptors 0-2 (0: stdin, 1: stdout, 2: stderr). Since don't have any file
-descriptors that are open, the file descriptor from our open call should be 3. 
+In the read call we can determine the fd based on how many files the program has opened. 
+> By defualt every program opens the file descriptors 0-2 (0: stdin, 1: stdout, 2: stderr). 
+Since don't have any file descriptors that are open, the file descriptor from our open call should be 3. 
 
-(In this case, we open pid.txt, but immediately close the file descriptor after being read.) 
+> (In this case, we open pid.txt, but immediately close the file descriptor after being read.) 
 
 For our exploit using ptrace we would write a chain with these functions. 
 
+```
 1. ptrace(PTRACE\_ATTACH, scotty\_pid)
 2. ptrace(PTRACE\_PEEKDATA, scotty\_pid, &thought1)
 3. write(1, &stack\_addr, 8)
 4. ptrace(PTRACE\_PEEKDATA, scotty\_pid, &flag\_addr, &stack\_addr) # until we fully get flag
 5. write(1, &stack\_addr, 0x30)
+```
 
 
 #### Setting up an SROP Chain
@@ -149,7 +153,7 @@ going to add a little bit of space in the front for us to read and write data to
 srop we want to set rsp and rbp to be our buffer. Each time we execute a new sigreturn frame, we also 
 want to add the size of a sigframe to rsp. A general formula for setting this would look like this:
 
-`rsp = fake_stack_buffer + sizeof(sigreturn_frame) * index`
+> `rsp = fake_stack_buffer + sizeof(sigreturn_frame) * index`
 
 
 ### Exploit
@@ -276,18 +280,16 @@ argument to be a reference to our win address which will be on the stack.
 
 Our overflow will look something like this. 
 
-```
-           second_arg                       saved_ret    fake_chunk             fake_next_size
-padding | p64(fake_chunk) | padding | ret_addr  |  ... |  0x21 | p64(win) ... | 0x21 
 
+>           second_arg                       saved_ret    fake_chunk             fake_next_size
+> padding | p64(fake_chunk) | padding | ret_addr  |  ... |  0x21 | p64(win) ... | 0x21 
 
-```
 
 Below is the full exploit that leaks the stack and heap. Then overwrites the value on 
 the canary list. Then finally overwrites the two arguments in validate() that gets called at 
 the end of main.
 
-```
+```python
 #! /usr/bin/python
 from pwn import *
 
@@ -393,11 +395,11 @@ Here is a simple flow graph of how AES CBC encrypts and decrypts (this might be 
 
 **Encryption**
 
-IV ^ KEY ->  AES\_ENCRYPT(KEY, PLAINTEXT) -> CIPHERTEXT
+> IV ^ KEY ->  AES\_ENCRYPT(KEY, PLAINTEXT) -> CIPHERTEXT
 
 **Decrytpion**
 
-AES\_DECRYPT(CIPHERTEXT, KEY) -> RESULT ^ IV -> PLAINTEXT
+> AES\_DECRYPT(CIPHERTEXT, KEY) -> RESULT ^ IV -> PLAINTEXT
 
 
 Since AES CBC uses xor, we can encrypt our known plaintext with the key, but have an IV filled with 0s.
@@ -405,10 +407,9 @@ Then we can xor the ciphertext that we generated with the original ciphertext to
 
 Now that we have the IV we can decrypt it and get the flag.
 
-```
-python encrypt.py
-b'dC\xf8\x97\r\x97\xd5$\xc7\xaf_\xb9\x1epK\x91          shctf{th1s_was_ju5t_a_big_d1str4ction}'
-```
+
+> python encrypt.py
+> b'dC\xf8\x97\r\x97\xd5$\xc7\xaf_\xb9\x1epK\x91          shctf{th1s_was_ju5t_a_big_d1str4ction}'
 
 
 
