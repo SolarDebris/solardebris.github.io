@@ -385,19 +385,20 @@ if __name__=="__main__":
 
 ## This is Neat
 
-This is a basic AES CBC challenge, AES is a symettrical cipher which means that the same key can be used to 
-encrypt and decrypt. We're given the key and the 16 characters of the known plaintext, but we don't know the
+This is a basic AES CBC challenge,  We're given the key and the 16 characters of the known plaintext, but we don't know the
 iv. AES CBC requires an IV and a KEY, it encrypts and decrypts in blocks of 16 bytes which is important for this
 challenge. We know that the key is b"3153153153153153" and that the message starts with "Mortimer_McMire:".
 To get the key all we need to know now is the IV. 
 
+### AES CBC
+AES is a symettrical cipher which means that the same key can be used to encrypt and decrypt. 
 Here is a simple flow graph of how AES CBC encrypts and decrypts (this might be wrong but is very simplified).
 
-**Encryption**
+#### Encryption
 
 > IV ^ KEY ->  AES\_ENCRYPT(KEY, PLAINTEXT) -> CIPHERTEXT
 
-**Decrytpion**
+#### Decrytpion
 
 > AES\_DECRYPT(CIPHERTEXT, KEY) -> RESULT ^ IV -> PLAINTEXT
 
