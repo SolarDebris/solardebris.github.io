@@ -36,31 +36,34 @@ const Home = () => {
           <h1 className={spaceGrotesk.className}>About Me</h1>
         </div>
         <div className="text-lg text-dr-foreground p-5 px-28 flex justify-center">
-          Hi my name is Alex. I`&apos;`m a security researcher and ctf player. My work,
+          Hi my name is Alex. I&apos;m a security researcher and ctf player. My work,
           projects, and interests include:
         </div>
         <div className="text-lg text-dr-foreground p-5 px-36 pb-16 flex justify-center">
           <ul className="list-disc">
             <li>
-              PWN and RE <EmojiFlags />
+                PWN and RE <EmojiFlags />
             </li>
             <li>
-              Binary Ninja <Code />
+                Binary Ninja <Code />
             </li>
             <li>
-              A little bit of *OS Vulnerability Research <Apple />
+                VR on Low Level Network Stacks
             </li>
             <li>
-              A little bit of baseband vr <CellTower />
+                *OS Vulnerability Research <Apple />
             </li>
             <li>
-              Surfing <Surfing />
+                A little bit of baseband vr <CellTower />
+            </li>
+            <li>
+                Surfing <Surfing />
             </li>
             <li>Chess</li>
             <li>
               Trying to get good at crypto ?? (but failing) <VpnKey />
             </li>
-            <li>Messing around with linux</li>
+            <li>Messing around with linux environment and dotfiles</li>
           </ul>
         </div>
       </div>
