@@ -383,5 +383,41 @@ if __name__=="__main__":
 
 ## This is Neat
 
+This is a basic AES CBC challenge, AES is a symettrical cipher which means that the same key can be used to 
+encrypt and decrypt. We're given the key and the 16 characters of the known plaintext, but we don't know the
+iv. AES CBC requires an IV and a KEY, it encrypts and decrypts in blocks of 16 bytes which is important for this
+challenge. We know that the key is b"3153153153153153" and that the message starts with "Mortimer_McMire:".
+To get the key all we need to know now is the IV. 
+
+Here is a simple flow graph of how AES CBC encrypts and decrypts (this might be wrong but is very simplified).
+
+**Encryption**
+
+IV ^ KEY ->  AES\_ENCRYPT(KEY, PLAINTEXT) -> CIPHERTEXT
+
+**Decrytpion**
+
+AES\_DECRYPT(CIPHERTEXT, KEY) -> RESULT ^ IV -> PLAINTEXT
+
+
+Since AES CBC uses xor, we can encrypt our known plaintext with the key, but have an IV filled with 0s.
+Then we can xor the ciphertext that we generated with the original ciphertext to get the iv that was used.
+
+Now that we have the IV we can decrypt it and get the flag.
+
+```
+python encrypt.py
+b'dC\xf8\x97\r\x97\xd5$\xc7\xaf_\xb9\x1epK\x91          shctf{th1s_was_ju5t_a_big_d1str4ction}'
+```
+
+
+
+
+
+
+
+
+
+
 
 
