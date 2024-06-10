@@ -30,7 +30,7 @@ const spaceGrotesk = localFont({
     display: 'swap',
 })
 
-export async function  getStaticProps() {
+export async function  getServerSideProps() {
   const res = await fetch("http://localhost:5000/posts");
   const posts: Post[] = await res.json();
 
