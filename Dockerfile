@@ -9,9 +9,11 @@ CMD mkdir -p /app/backend /app/frontend /app/blog_entries
 COPY backend /app/backend/
 COPY frontend /app/frontend/
 COPY blog_entries /app/blog_entries/
+COPY ./run.sh /app
+COPY ./update.sh /app/
 
 WORKDIR /app/backend/
-CMD python3 server.py
+CMD gunicorn -w 4 -b 0.0.0.0:5000 blog:app
 
 WORKDIR /app/frontend/
 RUN npm install
