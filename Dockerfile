@@ -7,7 +7,7 @@ RUN pip3 install --break-system-packages flask flask-cors gunicorn
 RUN git clone https://github.com/SolarDebris/solardebris.github.io /app
 RUN git clone https://github.com/SolarDebris/blog_generator
 
-COPY /app/crontab /etc/cron.d/update_website
+RUN cp /app/crontab /etc/cron.d/update_website
 RUN chmod 0644 /etc/cron.d/update_website
 RUN crontab /etc/cron.d/update_website
 
