@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd /srv/solardebris.github.io
+cd /app
 git pull
 
 rm -rf ./html_files/*
