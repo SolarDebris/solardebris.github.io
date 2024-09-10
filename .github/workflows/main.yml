@@ -37,14 +37,14 @@ jobs:
 
       - name: Archive build artifacts
         run: |
-          mkdir -p /artifacts
-          cp -r ./* /artifacts/
+          mkdir -p ./artifacts
+          find . -mindepth 1 -maxdepth 1 ! -name 'artifacts' -exec cp -r {} ./artifacts/ \;
           
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: github-pages
-          path: /artifacts/
+          path: ./artifacts/
 
   deploy:
     runs-on: ubuntu-latest
