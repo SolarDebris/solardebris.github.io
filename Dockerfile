@@ -15,4 +15,4 @@ RUN npm install
 RUN npm run build
 #RUN npm run preview --host
 
-EXPOSE 4173
+EXPOSE 3000
