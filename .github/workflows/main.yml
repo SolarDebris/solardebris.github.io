@@ -37,7 +37,7 @@ jobs:
 
       - name: Archive build artifacts
         run: |
-          mkdir -p artifacts
+          mkdir -p /artifacts
           cp -r ./* /artifacts/
           
       - name: Upload artifact
