@@ -18,6 +18,9 @@ WORKDIR /app/frontend/
 RUN npm install
 RUN npm run build
 #RUN npm run preview --host
+WORKDIR /app
+RUN chmod +x /app/update.sh
+RUN /app/update.sh
 
 EXPOSE 3000
 ENTRYPOINT ["/app/run.sh"]
