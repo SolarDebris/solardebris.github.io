@@ -619,6 +619,10 @@ Then we can xor the ciphertext that we generated with the original ciphertext to
 
 Now that we have the IV we can decrypt it and get the flag.
 
+#### Getting IV 
+> 0x0 ^ KEY -> AES\_ENCRYPT(KEY,PLAINTEXT) -> TEST_CIPHERTEXT
+> TEST_CIPHERTEXT ^ CIPHERTEXT = IV
+
 
 > python encrypt.py
 > b'dC\xf8\x97\r\x97\xd5$\xc7\xaf_\xb9\x1epK\x91          shctf{th1s_was_ju5t_a_big_d1str4ction}'
