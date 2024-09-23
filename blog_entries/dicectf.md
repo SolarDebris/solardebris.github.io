@@ -22,6 +22,17 @@ do this by leaking multiple symbols and looking it up in the libc databasse.
 
 #### ORW Rop Chain
 
+This is just a simple open, read, write chain with the difference
+being that instead of doing another write syscall, I just used printf.
+
+We also need a space in memory that we can read to and write from that will store
+the flag. Sometimes finding a space can be difficult statically, but we can use the
+fact on how pages work to our advantage. Since pages have to be allocated in 0x1000 
+aligned chunks, any writable data has to be at least a page big. 
+
+We can then use gdb vmmap to see a writeable section that will most likely have extra
+space even after the binary's section space. In this case I chose 0x404100 as my writable section.
+
 
 ```python
 #!/usr/bin/python
