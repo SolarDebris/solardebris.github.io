@@ -6,7 +6,7 @@ description: Writeup of a few challenges from buckeye ctf
 ---
 
 
-# No Handouts
+## No Handouts
 
 At first glance this seems to be a simple libc
 challenge with them providing us the leak. However, if we look at the remote 
@@ -124,31 +124,31 @@ if __name__=="__main__":
 
 ```
 
-# Sailing the C 
+## Sailing the C 
 This challenge has two parts, the first is where
 you can leak anywhere in memory.
 
 In the second part of the program, we have to 
 correctly answer the base of each section in the binary.
 
-# Leaking Libc
+### Leaking Libc
 The first leak we should get is libc as we can
 get a lot of other leaks by getting the libc base. 
 
 Simply leaking the address of the got entry for 
 puts will get us the libc base.
 
-# Leaking the Heap
+### Leaking the Heap
 We can leak the heap by looking at the main\_arena.
 In this case, the chunk that has been malloced is 
 at main\_arena + 96. 
 
-# Leaking ld
+### Leaking ld
 Next we can use the same method that we used to leak libc
 by leaking the libc got entry \_dl\_audit\_preinit.
 And then we have ld.
 
-# Leaking vdso and vvar
+### Leaking vdso and vvar
 To leak vdso, we can use the `linkmap` command 
 in pwndbg to view the linkmap. The link map will
 contain the entry for the base of the vdso. 
@@ -156,7 +156,7 @@ contain the entry for the base of the vdso.
 Since vvar is generally very close to vdso, we can brute
 force it, one page size at a time. 
 
-# Leaking the Stack
+### Leaking the Stack
 The hard part of this is leaking the stack. To 
 get a stack value we can leak two libc variables
 either `environ`  or `\_\_libc\_argv` which are both 
@@ -175,7 +175,7 @@ that the binary is run from. Once we find the string,
 we have found the end of the stack and can subtract
 0x21000 and round to get the base of the stack.
 
-# Leaking vsyscall
+### Leaking vsyscall
 Thankfully, vsyscall is a constant value so we 
 can look in gdb to get the value
 
@@ -336,8 +336,8 @@ if __name__=="__main__":
     exploit(p,e,l,ld)
 ```
 
-# Spaceman
+## Spaceman
 
 
 
-# Gent's Favorite Model
+## Gent's Favorite Model
