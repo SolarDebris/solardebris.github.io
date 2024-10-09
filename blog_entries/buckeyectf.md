@@ -351,7 +351,6 @@ a function a0 = 0, a1 = (cmd), a2 = len(cmd).
 
 CMD\_BUF     
 
----
 
 CMD\_PTR -> "help" | CMD\_FUNC  
 
