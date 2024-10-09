@@ -13,6 +13,8 @@ challenge with them providing us the leak. However, if we look at the remote
 configuration, there are no binaries in the 
 system. This means that we can't run execve.
 
+
+### Exploit Plan
 That means that we'll have to do an open, read,
 write rop chain. My plan was to use gets to 
 read "/app/flag.txt" into a writeable section of the
@@ -345,6 +347,8 @@ table to call the function for that specific command.
 When we are prompted to get a command we have a 0x10 byte overwrite of the lookup table.
 This will allow us to overwrite the command name and the command function. 
 
+
+### Function Table Primitive
 This is our first primitive that we found. The restrictions for this is that when we overwrite
 a function a0 = 0, a1 = (cmd), a2 = len(cmd). 
 
@@ -374,6 +378,8 @@ to increment the pointer to the writable address by three.
 
 We then called openat, using the same restrictions as before. However, we got stuck after this
 because there weren't any other functions that we could use with these restrictions.
+
+### ROPing in RISCV64
 
 That's when we realized that there was another primitive. When inputing our username, we are given 
 0x30 bytes, and when starting a rop chain. What is next in the stack is our username buffer. 

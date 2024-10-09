@@ -9,8 +9,11 @@ description: Writeup of a few challenges from buckeye ctf
 ## Shellcrunch
 
 This is a restricted shellcoding problem with two main steps. The first is that we have
-to pass a blacklist of bytes. We cannot have any 0x3b, 0x2f, 0x62, 0x69, 0x6e, 0x73, 0x68,
-or 0x0. 
+to pass a blacklist of bytes. 
+
+
+### Shellcode Restrictions
+We cannot have any 0x3b, 0x2f, 0x62, 0x69, 0x6e, 0x73, 0x68, or 0x0. 
 
 
 Then our shellcode will be passed through an auto xor key cipher. Where the current byte
@@ -25,6 +28,7 @@ write a quick function to make sure our shellcode is passing through the xor cip
 properly. 
 
 
+### Getting over hlt
 Once that occurs, then we have another problem. Our shellcode that has been replaced with
 0xf4 will halt execution and stop our shellcode from continuing to execute. To get 
 pass this I used a relative jump instruction (jmp 4 0xeb04) to jump over the hlt instructions.
@@ -34,6 +38,8 @@ From there, I can do a few bytes for instructions that I need to execute, and th
 to skip over the hlt instructions. My goal when calling this shellcode is to call a read to read
 in unrestricted shellcode. 
 
+
+### Restricted Shellcoding Tips
 
 > Generally in any type of restricted shellcoding problem like this, it is the quickest to call read
 > to read in more shellcode instead of continuing to craft shellcode in the restricted environment.
