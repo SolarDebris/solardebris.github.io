@@ -159,7 +159,7 @@ force it, one page size at a time.
 ### Leaking the Stack
 The hard part of this is leaking the stack. To 
 get a stack value we can leak two libc variables
-either `environ`  or `\_\_libc\_argv` which are both 
+either `environ`  or `__libc_argv` which are both 
 on the stack. 
 
 However, the problem becomes getting the stack 
@@ -169,7 +169,7 @@ the stack is the string argv ('./chall' or '/app/run')
 is near the end of the stack. Two, that the stack
 is consistently 0x21000 size. 
 
-So my solution to this problem is to leak `\_\_libc\_argv`
+So my solution to this problem is to leak `__libc_argv`
 and walk down the stack until we see the argv 
 that the binary is run from. Once we find the string,
 we have found the end of the stack and can subtract
