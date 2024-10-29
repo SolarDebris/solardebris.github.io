@@ -1,5 +1,5 @@
 ---
-title: Sunshine CTF 2023
+title: Sunshine CTF 2024
 category: WRITEUP, CTF, HEAP, TCACHE, HOUSE OF FORCE
 date: May 15th, 2024
 description: Writeup of challenges for sunshine ctf 2024.
