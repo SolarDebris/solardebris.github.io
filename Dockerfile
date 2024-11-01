@@ -5,7 +5,7 @@ RUN apt-get update && apt-get install -y certbot cron python3 python3-pip python
 RUN pip3 install --break-system-packages flask flask-cors gunicorn jwt
 
 RUN git clone https://github.com/SolarDebris/solardebris.github.io /app
-RUN git clone https://github.com/SolarDebris/blog_generator
+RUN git clone https://github.com/SolarDebris/blog_generator /app/blog_generator
 
 RUN cp /app/crontab /etc/cron.d/update_website
 RUN chmod 0644 /etc/cron.d/update_website
