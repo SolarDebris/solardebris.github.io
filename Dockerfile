@@ -1,7 +1,7 @@
 FROM node:latest
 
 CMD mkdir -p /app/
-RUN apt-get update && apt-get install -y cron python3 python3-pip nodejs npm
+RUN apt-get update && apt-get install -y certbot cron python3 python3-pip python3-certbot-nginx nodejs npm 
 RUN pip3 install --break-system-packages flask flask-cors gunicorn jwt
 
 RUN git clone https://github.com/SolarDebris/solardebris.github.io /app
