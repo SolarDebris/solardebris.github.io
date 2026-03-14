@@ -14,7 +14,7 @@ const Contact = () => {
   return (
     <Layout> 
         <div className="flex justify-center pt-10 pb-10">
-          <div className="pt-14 bg-dr-current_line/40 w-2/5 h-full rounded-lg max-w-4xl">
+          <div className="pt-8 sm:pt-14 bg-dr-current_line/40 w-11/12 sm:w-2/5 h-full rounded-lg max-w-4xl">
             <div className="text-5xl text-dr-red font-bold p-10 flex justify-center">
               <h1 className={spaceGrotesk.className}>Contact Me</h1>
             </div>

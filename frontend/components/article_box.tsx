@@ -36,7 +36,7 @@ const ArticleBox: React.FC<Post> = (props) => {
             {props.metadata.title}
         </a>
       </h2>
-      <div className="flex px-28 justify-center">
+      <div className="flex px-4 sm:px-28 justify-center flex-wrap gap-1">
         <SellOutlinedIcon/>
         {categories.map((category,key) => (
             <Tag key={key} name={category}/>

@@ -31,15 +31,15 @@ const Home = () => {
 
     <Layout>
     <div className="flex justify-center pt-10 pb-10">
-      <div className="pt-14 bg-dr-current_line/40 w-3/5 max-w-4xl h-full rounded-lg">
-        <div className="text-5xl text-dr-red font-bold p-10 flex justify-center">
+      <div className="pt-8 sm:pt-14 bg-dr-current_line/40 w-11/12 sm:w-3/5 max-w-4xl h-full rounded-lg">
+        <div className="text-5xl text-dr-red font-bold p-5 sm:p-10 flex justify-center">
           <h1 className={spaceGrotesk.className}>About Me</h1>
         </div>
-        <div className="text-lg text-dr-foreground p-5 px-28 flex justify-center">
+        <div className="text-lg text-dr-foreground p-5 px-6 sm:px-28 flex justify-center">
           Hi my name is Alex. I&apos;m a security researcher and ctf player. My work,
           projects, and interests include:
         </div>
-        <div className="text-lg text-dr-foreground p-5 px-36 pb-16 flex justify-center">
+        <div className="text-lg text-dr-foreground p-5 px-8 sm:px-36 pb-16 flex justify-center">
           <ul className="list-disc">
             <li>
                 PWN and RE <EmojiFlags />

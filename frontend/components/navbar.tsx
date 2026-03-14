@@ -39,9 +39,9 @@ const Navbar = () => {
   console.log(spaceGrotesk.className);
 
   return (
-    <div className="bg-dr-current_line text-dr-cyan w-full flex justify-center h-16">
-        <div className="flex max-w-4xl justify-center">
-            <div className="flex items-center px-6 pr-48">
+    <div className="bg-dr-current_line text-dr-cyan w-full flex justify-center min-h-16">
+        <div className="flex w-full max-w-4xl justify-between items-center px-4">
+            <div className="flex items-center gap-2">
                 <IconButton
                     size="medium"
                     edge="start"
@@ -52,37 +52,31 @@ const Navbar = () => {
                         <Image src={Logo} alt="SD"  width="36" height="36" className="rounded-full"/>
                     </a>
                 </IconButton>
-                <div className="px-6">
-                    <p className={spaceGrotesk.className}>SolarDebris</p>
-                </div>
+                <p className={spaceGrotesk.className}>SolarDebris</p>
             </div>
-            <div className="flex items-center px-10">
-                <Stack direction="row" spacing={2}>
-                    <nav className="px-12">
-                        <Button color="inherit">
-                            <Link className="text-dr-cyan" href="/">
-                            <p className={spaceGrotesk.className}>
-                            Home $
-                            </p>
-                            </Link>
-                        </Button>
-                        <Button color="inherit">
-                            <Link className="text-dr-cyan" href="/posts">
-                            <p className={spaceGrotesk.className}>
-                            ./ Posts
-                            </p>
-                            </Link>
-                        </Button>
-                        <Button color="inherit">
-                            <Link className="text-dr-cyan" href="/contact">
-                            <p className={spaceGrotesk.className}>
-                            ./ Contact
-                            </p>
-                            </Link>
-                        </Button>
-                    </nav>
-                </Stack>
-            </div>
+            <nav className="flex items-center">
+                <Button color="inherit" size="small">
+                    <Link className="text-dr-cyan" href="/">
+                    <p className={spaceGrotesk.className}>
+                    Home $
+                    </p>
+                    </Link>
+                </Button>
+                <Button color="inherit" size="small">
+                    <Link className="text-dr-cyan" href="/posts">
+                    <p className={spaceGrotesk.className}>
+                    ./ Posts
+                    </p>
+                    </Link>
+                </Button>
+                <Button color="inherit" size="small">
+                    <Link className="text-dr-cyan" href="/contact">
+                    <p className={spaceGrotesk.className}>
+                    ./ Contact
+                    </p>
+                    </Link>
+                </Button>
+            </nav>
         </div>
     </div>
   );

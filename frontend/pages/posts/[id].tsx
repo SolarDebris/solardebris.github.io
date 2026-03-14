@@ -70,12 +70,12 @@ useEffect(() => { if (initialPosts.length === 0) {
 
   return (
     <Layer>
-      <div className="flex justify-center p-10">
-        <div className="pt-14 px-20 p-10 bg-dr-current_line/40 w-1/2 max-w-4xl h-full rounded-lg">
-          <h2 className="text-dr-orange font-grotesk font-bold text-4xl flex justify-center text-center mb-4 underline underline-offset-8 decoration-2">
+      <div className="flex justify-center p-4 sm:p-10">
+        <div className="pt-8 sm:pt-14 px-4 sm:px-20 p-5 sm:p-10 bg-dr-current_line/40 w-11/12 sm:w-1/2 max-w-4xl h-full rounded-lg">
+          <h2 className="text-dr-orange font-grotesk font-bold text-3xl sm:text-4xl flex justify-center text-center mb-4 underline underline-offset-8 decoration-2">
             {sanitizedTitle}
           </h2>
-          <div className="flex justify-center px-28 pb-10">
+          <div className="flex justify-center px-4 sm:px-28 pb-10 flex-wrap gap-1">
             <SellOutlinedIcon/>
             {categories.map((category, key) => (
                 <Tag key={key} name={category}/>
