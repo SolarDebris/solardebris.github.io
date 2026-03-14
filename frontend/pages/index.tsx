@@ -45,25 +45,24 @@ const Home = () => {
                 PWN and RE <EmojiFlags />
             </li>
             <li>
-                Binary Ninja <Code />
-            </li>
-            <li>
                 VR on Low Level Network Stacks
             </li>
+                Embedded Vulnerability Research <Apple />
+            </li>
             <li>
-                *OS Vulnerability Research <Apple />
+                Emulation
             </li>
             <li>
                 A little bit of baseband vr <CellTower />
             </li>
             <li>
-                Surfing <Surfing />
+                Surfing <Surfing /> and Snowboarding
             </li>
-            <li>Chess</li>
             <li>
-              Trying to get good at crypto ?? (but failing) <VpnKey />
+                Binary Ninja <Code />
             </li>
-            <li>Messing around with linux environment and dotfiles</li>
+
+            <li>Chess</li>
           </ul>
         </div>
       </div>
