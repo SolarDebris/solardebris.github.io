@@ -30,6 +30,9 @@ def get_posts():
 
         filename = "../html_files/" + file.split("/")[2].split(".")[0] + ".html"
 
+        if not os.path.exists(filename):
+            continue
+
         html_file = open(filename).read()
 
         post = open(file, "r").read()
