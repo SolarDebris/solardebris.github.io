@@ -46,7 +46,7 @@ const Home = () => {
             </li>
             <li>
                 VR on Low Level Network Stacks
-            </li>
+            <li>
                 Embedded Vulnerability Research <Apple />
             </li>
             <li>
