@@ -2,7 +2,7 @@
 title: PatriotCtf 2024 Writeups
 category: WRITEUP, CTF, SHELLCODING, HEAP, KERNEL, V8
 date: September 18th, 2024
-description: Writeup of a few challenges from buckeye ctf
+description: Writeup of a few challenges from patriotctf 
 ---
 
 
