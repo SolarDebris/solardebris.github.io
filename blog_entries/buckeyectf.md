@@ -20,7 +20,7 @@ write rop chain. My plan was to use gets to
 read "/app/flag.txt" into a writeable section of the
 binary. Then call open on the writable data and then
 read. Once the flag has been read in we can just
-call puts on the writable flag 
+call puts on the writable flag. 
 
 
 ```python
@@ -544,6 +544,6 @@ if __name__=="__main__":
     exploit(p,e)
 ```
 
-## Gent's Favorite Model
+
 
 
