@@ -8,10 +8,11 @@ description: Writeup of a few challenges from buckeye ctf
 
 ## No Handouts
 
-At first glance this seems to be a simple libc
-challenge with them providing us the leak. However, if we look at the remote 
-configuration, there are no binaries in the 
-system. This means that we can't run execve.
+At first glance this seems to be a simple stack buffer overflow and ret2libc
+challenge with them providing us the libc leak. However, if we look at the remote 
+configuration, there are no binaries in the system. This means that we can't run execve
+since /bin/sh or /bin/cat aren't on the system. So we need to only use code in libc to 
+get us the flag.
 
 
 ### Exploit Plan
