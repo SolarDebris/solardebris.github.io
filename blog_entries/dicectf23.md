@@ -209,7 +209,10 @@ This can tell us that it is a flag scrambler.
 When we look at the binary, we can see that there is a function call that will
 take in the scrambled input. We can patch this to print out the scrambled input
 to determine the order of scrambling. If we patch it with puts it will print the
-scrambled input. We can send a string of the alphabet and get the order
+scrambled input.
+
+We can send a string of the alphabet and get the order that it will
+scramble our input, and then write a simple python script to unscramble the flag.
 
 ### Unscrambling the Flag
 We can make a simple script that will reverse the scrambling on the encrypted flag
