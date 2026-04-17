@@ -214,6 +214,10 @@ won't be able to get a leak very easily.
 In the edit tag function, we can edit a value + 0x18 offset from the chunk. We can 
 use this as our first overwrite primitive. 
 
+Our target goal is to overwrite log_len which will be the size used in the create log file function.
+
+Then we can use a two stage rop chain to first leak libc, and then do system("/bin/sh") on the second chain.
+
 ```python
 #! /usr/bin/python
 from pwn import *
