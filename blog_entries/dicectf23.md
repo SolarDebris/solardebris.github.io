@@ -203,7 +203,8 @@ if __name__=="__main__":
 ### Static Analysis
 When we take a look at the binary we can see that there is a string that is
 64 characters long and contains the characters "d", "i", "c", "e", "{", "}". 
-This can tell us that it is a flag scrambler.
+Using gdb, we can see that it expects 64 characters and then scrambles and compares
+to that string in the binary.
 
 ### Patching the Binary
 When we look at the binary, we can see that there is a function call that will
