@@ -129,7 +129,7 @@ if __name__=="__main__":
 
 ## Sailing the C 
 This challenge has two parts, the first is where
-you can leak anywhere in memory.
+you are prompted an address in which it will give you a memory leak.
 
 In the second part of the program, we have to 
 correctly answer the base of each section in the binary.
